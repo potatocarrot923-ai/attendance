@@ -1,0 +1,2142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Permissions-Policy" content="camera=(self), microphone=()">
+<meta name="description" content="BIT-CT Smart Attendance System - Cloud Enterprise Edition">
+<meta name="theme-color" content="#6d28d9">
+<title>BIT-CT I-A2 — Carrot Attendance Intelligence</title>
+<style>
+:root {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --panel2: #f1f5f9;
+  --line: #e2e8f0;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --primary: #6d28d9;
+  --primary2: #5b21b6;
+  --accent: #8b5cf6;
+  --ok: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f3f4ff 0%, var(--bg) 180px, var(--bg) 100%);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+button, input, select { font: inherit; }
+input, select { font-size: 16px; }
+button { min-height: 44px; }
+button { cursor: pointer; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.hidden { display: none !important; }
+.app { width: min(1200px, 100%); margin: auto; padding: 20px; }
+.shell { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.view { display: none; padding: 28px; }
+.view.active { display: block; animation: fadeIn .2s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.brandmark { display: flex; align-items: center; gap: 12px; }
+.mark { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; display: grid; place-items: center; font-weight: 800; box-shadow: 0 10px 20px rgba(109, 40, 217, 0.25); }
+.brand h1 { margin: 0; font-size: 1.1rem; }
+.brand p { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.header-actions { display: flex; gap: 8px; }
+
+.btn { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 600; font-size: 0.9rem; transition: background .15s, transform .1s; }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
+.primary:hover { background: linear-gradient(135deg, var(--primary2), var(--primary)); }
+.ghost { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); }
+.danger { background: #fee2e2; color: #991b1b; }
+.warning { background: #fef3c7; color: #92400e; }
+
+.hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: center; margin-bottom: 24px; }
+.hero h2 { font-size: clamp(2rem, 4vw, 2.6rem); margin: 0 0 12px 0; line-height: 1.15; }
+.hero-copy p { color: var(--muted); font-size: 1rem; margin: 0; }
+.hero-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; background: linear-gradient(180deg, #faf5ff 0%, #f8fafc 100%); border-color: rgba(109, 40, 217, 0.14); }
+.code { font-size: 2.5rem; font-weight: 800; letter-spacing: 0.1em; color: var(--primary); margin: 8px 0; }
+.status-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; background: #ede9fe; color: #5b21b6; }
+.pill::before { content: "•"; font-size: 1rem; }
+
+.grid { display: grid; gap: 16px; }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.g2 { grid-template-columns: 1fr 1fr; }
+.card { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+.stat { font-size: 2rem; font-weight: 800; color: var(--ink); margin-top: 4px; }
+.label { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 18px; }
+.feature-item { background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.feature-item h4 { margin: 0 0 6px 0; font-size: 1rem; }
+.feature-item p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+.showcase { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 18px; }
+.showcase-item { background: linear-gradient(180deg, #fff 0%, #faf5ff 100%); border: 1px solid rgba(109, 40, 217, 0.14); border-radius: 16px; padding: 18px; }
+.showcase-item h3 { margin: 0 0 8px 0; font-size: 1.08rem; }
+.showcase-item p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+.ai-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 18px; }
+.ai-card { border: 1px solid rgba(109, 40, 217, 0.12); background: linear-gradient(180deg, #ffffff 0%, #f8f5ff 100%); border-radius: 16px; padding: 18px; }
+.ai-card .tiny { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ai-card strong { display: block; font-size: 1.7rem; margin-top: 8px; }
+.ai-card span { display: block; color: var(--muted); margin-top: 6px; font-size: 0.85rem; }
+.meter { width: 100%; height: 8px; background: #ede9fe; border-radius: 999px; overflow: hidden; margin-top: 10px; }
+.meter-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: inherit; }
+
+.footer { padding: 20px 24px 28px; color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); }
+
+.form { max-width: 600px; margin: auto; }
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+.field input, .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.field input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+.notice { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 0.9rem; }
+.notice.bad { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.notice.ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.notice.warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+.camera-box { width: 100%; height: 260px; background: #000; border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+.camera-box video, .camera-box canvas { width: 100%; height: 100%; object-fit: cover; }
+
+.badge { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.badge.present { background: #dcfce7; color: #15803d; }
+.badge.late { background: #fef3c7; color: #b45309; }
+.badge.flagged { background: #fee2e2; color: #b91c1c; }
+
+.list { display: grid; gap: 8px; max-height: 400px; overflow-y: auto; }
+.item { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+
+.link-btn { background: none; border: none; color: var(--primary); font-size: 0.85rem; padding: 0; margin-top: 8px; text-decoration: underline; }
+
+.status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0; }
+.mini-stat { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: #f8fafc; }
+.mini-stat strong { display: block; font-size: 1.4rem; }
+.mini-stat span { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.bar-chart { display: grid; gap: 12px; margin-top: 14px; }
+.bar-row { display: grid; grid-template-columns: minmax(110px, 1fr) 2fr auto; gap: 10px; align-items: center; font-size: 0.82rem; }
+.bar-track { height: 10px; background: #ede9fe; border-radius: 999px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #16a34a, #84cc16); }
+.bar-fill.warn { background: linear-gradient(90deg, #d97706, #facc15); }
+.bar-fill.bad { background: linear-gradient(90deg, #dc2626, #fb7185); }
+.summary-table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin-top: 12px; font-size: 0.84rem; }
+.summary-table th, .summary-table td { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line); }
+.summary-table th { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.schedule-list { display: grid; gap: 8px; margin-top: 14px; }
+.schedule-item { display: grid; grid-template-columns: 110px 1fr auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; }
+.schedule-item.current { border-color: rgba(109, 40, 217, 0.45); background: #faf5ff; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1); }
+.schedule-item.active { border-color: rgba(22, 163, 74, 0.5); background: #f0fdf4; box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1); }
+.schedule-time { color: var(--primary); font-weight: 700; font-size: 0.82rem; }
+.schedule-subject { font-weight: 700; }
+.schedule-meta { color: var(--muted); font-size: 0.78rem; margin-top: 3px; }
+.schedule-day { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.schedule-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.schedule-actions .btn { padding: 6px 9px; font-size: 0.75rem; }
+.report-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.report-form .field { margin-bottom: 0; }
+.report-form .full { grid-column: 1 / -1; }
+@media(max-width: 768px) { .analytics-grid, .report-form { grid-template-columns: 1fr; } .report-form .full { grid-column: auto; } }
+
+@media(max-width: 768px) {
+  .hero, .g2 { grid-template-columns: 1fr; }
+  .view { padding: 16px; }
+}
+
+@media(max-width: 520px) {
+  .app { padding: 8px; }
+  .shell { border-radius: 12px; }
+  .header { position: static; padding: 12px 14px; align-items: flex-start; gap: 12px; flex-direction: column; }
+  .brandmark { width: 100%; }
+  .brand h1 { font-size: 1rem; }
+  .header-actions { width: 100%; }
+  .header-actions .btn { flex: 1; padding: 9px 8px; font-size: 0.78rem; }
+  .view { padding: 12px; }
+  .hero { gap: 16px; margin-bottom: 16px; }
+  .hero h2 { font-size: 1.8rem; }
+  .hero-card, .card, .form { padding: 14px; }
+  .code { font-size: 2rem; }
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .stat { font-size: 1.6rem; }
+  .ai-panel { grid-template-columns: 1fr; gap: 8px; }
+  .ai-card { padding: 14px; }
+  .feature-grid, .showcase { grid-template-columns: 1fr; }
+  .camera-box { height: 210px; }
+  .schedule-item { grid-template-columns: 1fr auto; gap: 5px 10px; padding: 10px; }
+  .schedule-day { grid-column: 1 / -1; }
+  .schedule-meta { line-height: 1.35; }
+  .schedule-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .schedule-actions .btn { flex: 1; }
+  .bar-row { grid-template-columns: minmax(90px, 1fr) 1.4fr auto; gap: 6px; }
+  .item { padding: 10px 12px; align-items: flex-start; gap: 8px; }
+  .footer { padding: 16px; flex-direction: column; align-items: flex-start; }
+  .report-form { gap: 8px; }
+  .report-form .btn { width: 100%; }
+  .status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .mini-stat { padding: 10px; }
+  .mini-stat strong { font-size: 1.05rem; overflow-wrap: anywhere; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="shell">
+    <header class="header">
+      <div class="brandmark">
+        <div class="mark">CT</div>
+        <div class="brand">
+          <h1>Carrot Attendance Intelligence</h1>
+          <p>BIT-CT Section I-A2</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn ghost" onclick="Router.navigate('homeView')">Home</button>
+        <button class="btn ghost" onclick="Router.navigate('instructorView')">Instructor Desk</button>
+      </div>
+    </header>
+
+    <!-- HOME VIEW -->
+    <section id="homeView" class="view active">
+      <div class="hero">
+        <div class="hero-copy">
+          <div class="pill">Secure classroom access</div>
+          <h2>Smart Attendance Tracking for Modern Classrooms</h2>
+          <p>Reliable roll-call recording with secure check-in, late detection, and verified student records for daily classroom operations.</p>
+          <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+            <button class="btn primary" onclick="Router.navigate('studentView')">Student Check-In</button>
+            <button class="btn ghost" onclick="Router.navigate('instructorView')">Instructor Portal</button>
+          </div>
+
+          <div class="feature-grid">
+            <div class="feature-item">
+              <h4>Live Proof</h4>
+              <p>Camera capture attaches an optical check to each attendance log.</p>
+            </div>
+            <div class="feature-item">
+              <h4>Smart Timing</h4>
+              <p>Late entries are flagged automatically using the current session clock.</p>
+            </div>
+            <div class="feature-item">
+              <h4>Reliable Export</h4>
+              <p>Download records as CSV or JSON for reporting and backup.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="label">ACTIVE SESSION PASSCODE</div>
+          <div id="homeCode" class="code">------</div>
+          <div id="homeSessionState" style="font-size: 0.85rem; color: var(--muted);">Checking classroom clock...</div>
+          <div class="status-row">
+            <span id="connectionState" class="pill">Network online</span>
+            <span class="pill">Verified sync</span>
+          </div>
+          <div id="homeNotice"></div>
+          <button class="btn primary" style="margin-top:14px; width:100%;" onclick="App.generateNewSession()">Refresh Passcode</button>
+        </div>
+      </div>
+
+      <div class="grid g4">
+        <div class="card"><div class="label">Today's Records</div><div class="stat" id="statTotal">0</div></div>
+        <div class="card"><div class="label">Present</div><div class="stat" id="statPresent">0</div></div>
+        <div class="card"><div class="label">Late</div><div class="stat" id="statLate">0</div></div>
+        <div class="card"><div class="label">Flagged Exceptions</div><div class="stat" id="statFlags">0</div></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Class schedule</h3>
+        <p id="scheduleSummary" class="label">Checking today’s periods...</p>
+        <div id="scheduleBoard" class="schedule-list"></div>
+      </div>
+
+      <div class="ai-panel">
+        <div class="ai-card">
+          <div class="tiny">Presence rate</div>
+          <strong id="presenceRate">0%</strong>
+          <div class="meter"><span id="presenceMeter" class="meter-fill" style="width:0%"></span></div>
+          <span>Live accuracy across class activity.</span>
+        </div>
+        <div class="ai-card">
+          <div class="tiny">Risk index</div>
+          <strong id="riskIndex">0%</strong>
+          <div class="meter"><span id="riskMeter" class="meter-fill" style="width:0%"></span></div>
+          <span>Potential anomalies and exceptions flagged.</span>
+        </div>
+        <div class="ai-card">
+          <div class="tiny">Verification score</div>
+          <strong id="verificationScore">0%</strong>
+          <div class="meter"><span id="verificationMeter" class="meter-fill" style="width:0%"></span></div>
+          <span>Consistency of validated attendance entries.</span>
+        </div>
+      </div>
+
+      <div class="showcase">
+        <div class="showcase-item">
+          <h3>Fast Student Check-In</h3>
+          <p>Students enter their details, confirm the active code, and submit attendance in seconds.</p>
+        </div>
+        <div class="showcase-item">
+          <h3>Verified Records</h3>
+          <p>Every session keeps track of presence, late arrivals, and exceptions for better accountability.</p>
+        </div>
+        <div class="showcase-item">
+          <h3>Instructor Control</h3>
+          <p>Teachers can review attendance logs, lock the dashboard, and export records for reporting.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENT CHECK-IN VIEW -->
+    <section id="studentView" class="view">
+      <div class="form">
+        <h2>Student Attendance Registration</h2>
+        <div id="studentNotice"></div>
+        
+        <form id="checkinForm" onsubmit="App.handleCheckIn(event)">
+          <div class="field">
+            <label for="studentName">Full Name</label>
+            <input type="text" id="studentName" required maxlength="80" autocomplete="name" placeholder="e.g. Juan Dela Cruz">
+          </div>
+          <div class="field">
+            <label for="studentId">Student ID</label>
+            <input type="text" id="studentId" required maxlength="32" autocomplete="off" placeholder="e.g. 2026-0001">
+          </div>
+          <div class="field">
+            <label for="subjectSelect">Subject</label>
+            <select id="subjectSelect" required>
+              <option value="">Select a subject</option>
+              <option>Mathematics</option>
+              <option>Science</option>
+              <option>English</option>
+              <option>Computer Studies</option>
+              <option>History</option>
+              <option>Filipino</option>
+              <option>Physical Education</option>
+              <option>Arts</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="attendanceType">Attendance Status</label>
+            <select id="attendanceType" required>
+              <option value="present">Present</option>
+              <option value="late">Late</option>
+              <option value="absent">Absent</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="absenceReason">Reason for absence</label>
+            <select id="absenceReason">
+              <option value="">Select a reason</option>
+              <option>Sick</option>
+              <option>Family emergency</option>
+              <option>Teacher absent</option>
+              <option>School activity</option>
+              <option>Third-party report</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reporterRole">Reported by</label>
+            <select id="reporterRole">
+              <option value="Student">Student</option>
+              <option value="Teacher/Substitute">Teacher/Substitute</option>
+              <option value="Third-party representative">Third-party representative</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="teacherStatus">Teacher / class coverage</label>
+            <select id="teacherStatus">
+              <option value="Teacher present">Teacher present</option>
+              <option value="Teacher absent">Teacher absent</option>
+              <option value="Substitute/third person present">Substitute/third person present</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sessionCodeInput">Session Code</label>
+            <input type="text" id="sessionCodeInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required placeholder="6-digit PIN">
+          </div>
+          <div class="field">
+            <label for="scheduleSelect">Class period</label>
+            <select id="scheduleSelect" required>
+              <option value="">Select a scheduled period</option>
+            </select>
+          </div>
+          
+          <div class="field">
+            <label>Live Optical Proof Capture</label>
+            <div class="camera-box">
+              <video id="webcam" autoplay playsinline muted></video>
+              <canvas id="photoCanvas" class="hidden"></canvas>
+            </div>
+            <div id="cameraNotice" class="notice warn hidden" style="margin-top:8px; margin-bottom:0;">Camera unavailable. You can continue without optical proof.</div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="button" class="btn ghost" style="flex:1;" onclick="App.capturePhoto()">Capture Frame</button>
+              <button type="button" class="btn ghost" onclick="App.resetCamera()">Reset</button>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="submit" class="btn primary" style="flex:1;">Submit Attendance</button>
+            <button type="button" class="btn ghost" onclick="Router.navigate('homeView')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- INSTRUCTOR VIEW -->
+    <section id="instructorView" class="view">
+      <!-- 1. LOGIN FORM -->
+      <div id="instructorAuth" class="form">
+        <h2>Instructor Security Gate</h2>
+        <div id="authNotice"></div>
+        <div class="field">
+          <label for="instructorUsername">Username</label>
+          <input type="text" id="instructorUsername" maxlength="32" autocomplete="username" placeholder="Enter username (e.g., admin)" value="admin">
+        </div>
+        <div class="field">
+          <label for="pinInput">Password</label>
+          <input type="password" id="pinInput" maxlength="128" autocomplete="current-password" placeholder="Enter secure password">
+        </div>
+        <button class="btn primary" style="width:100%;" onclick="App.authenticateInstructor()">Unlock Dashboard</button>
+        <button class="link-btn" onclick="App.showForgotPassword(true)">Forgot password?</button>
+      </div>
+
+      <!-- 2. FORGOT PASSWORD / SMS RESET FORM -->
+      <div id="forgotPasswordForm" class="form hidden">
+        <h2>Reset Instructor Password</h2>
+        <div id="resetNotice"></div>
+        
+        <!-- Step 1: Send Code -->
+        <div id="resetStep1">
+          <div class="field">
+            <label for="resetPhone">Recovery Phone Number</label>
+            <input type="tel" id="resetPhone" maxlength="24" autocomplete="tel" placeholder="+639123456789">
+          </div>
+          <button class="btn primary" style="width:100%;" onclick="App.requestResetCode()">Generate Recovery Code</button>
+        </div>
+
+        <!-- Step 2: Verify Code & Reset -->
+        <div id="resetStep2" class="hidden">
+          <div class="field">
+            <label for="smsCodeInput">Recovery Code</label>
+            <input type="text" id="smsCodeInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="6-digit code">
+          </div>
+          <div class="field">
+            <label for="newPasswordInput">New Password</label>
+            <input type="password" id="newPasswordInput" maxlength="128" autocomplete="new-password" placeholder="Enter new password">
+          </div>
+          <button class="btn primary" style="width:100%;" onclick="App.submitPasswordReset()">Update Password</button>
+        </div>
+
+        <button class="link-btn" onclick="App.showForgotPassword(false)">Back to Login</button>
+      </div>
+
+      <!-- 3. COMMAND CENTER -->
+      <div id="instructorDesk" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+          <h2>Instructor Command Center</h2>
+          <div>
+            <button class="btn ghost" onclick="App.exportDataset('csv')">Export CSV</button>
+            <button class="btn ghost" onclick="App.exportDataset('json')">Export JSON</button>
+            <button class="btn warning" onclick="App.logoutInstructor()">Lock Session</button>
+            <button class="btn danger" onclick="App.purgeDatabase()">Purge Local Cache</button>
+          </div>
+        </div>
+
+        <div id="adminManagementPanel" class="card hidden" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div>
+              <h3>Admin • Instructor Management</h3>
+              <p class="label">Create, activate, deactivate, and manage instructor accounts on this device.</p>
+            </div>
+            <span class="badge present">ADMIN ONLY</span>
+          </div>
+          <div id="instructorManagementNotice"></div>
+          <form id="addInstructorForm" class="report-form" style="margin-top:14px;">
+            <div class="field">
+              <label for="newInstructorName">Full name</label>
+              <input id="newInstructorName" type="text" maxlength="80" placeholder="e.g. Maria Santos" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorUsername">Username</label>
+              <input id="newInstructorUsername" type="text" maxlength="32" autocomplete="off" placeholder="e.g. msantos" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorPassword">Temporary password</label>
+              <input id="newInstructorPassword" type="password" maxlength="128" autocomplete="new-password" placeholder="At least 6 characters" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorPhone">Philippine mobile number</label>
+              <input id="newInstructorPhone" type="tel" maxlength="16" autocomplete="tel" placeholder="09171234567" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorSubjects">Subjects</label>
+              <input id="newInstructorSubjects" type="text" maxlength="200" placeholder="e.g. Mathematics, Science">
+            </div>
+            <button class="btn primary" type="submit">Add Instructor</button>
+          </form>
+          <div id="instructorList" class="list" style="margin-top:14px;"></div>
+        </div>
+
+        <div class="grid g2">
+          <div class="card">
+            <h3>Attendance Log</h3>
+            <div id="attendanceBoard" class="list" style="margin-top:12px;"></div>
+          </div>
+          <div class="card">
+            <h3>System Status</h3>
+            <div class="status-grid">
+              <div class="mini-stat"><span>Data mode</span><strong id="backendStatus">Local fallback</strong></div>
+              <div class="mini-stat"><span>Storage</span><strong>Browser storage</strong></div>
+              <div class="mini-stat"><span>Session</span><strong id="deskSessionCode">--</strong></div>
+              <div class="mini-stat"><span>Clock</span><strong id="deskClock">--:--</strong></div>
+            </div>
+            <div class="ai-panel" style="margin-top: 8px;">
+              <div class="ai-card">
+                <div class="tiny">AI insight</div>
+                <strong id="aiInsightValue">Ready</strong>
+                <span id="aiInsightText">Attendance flow is stable.</span>
+              </div>
+            </div>
+            <div class="ai-card" style="margin-top: 12px;">
+              <div class="tiny">Strengths & weaknesses</div>
+              <strong id="strengthSummary">No data</strong>
+              <span id="weaknessSummary">No data</span>
+              <div class="label" style="margin-top: 10px;">Main reason: <span id="mainReason" style="color: var(--ink);">--</span></div>
+            </div>
+            <p class="label">Secure access control</p>
+            <p class="label">Live classroom sync</p>
+            <p class="label">Verified attendance records</p>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="card">
+            <h3>Subject performance</h3>
+            <p class="label">Present, late, and absent patterns by subject</p>
+            <div id="subjectChart" class="bar-chart"></div>
+          </div>
+          <div class="card">
+            <h3>Student overview</h3>
+            <p class="label">Students needing attention today</p>
+            <div id="studentSummary"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3>Manage class schedule</h3>
+          <p class="label">Only the instructor desk can change periods. Changes are saved on this device and used by student check-in.</p>
+          <div id="scheduleNotice"></div>
+          <input type="hidden" id="scheduleEditId">
+          <div class="report-form" style="margin-top:14px;">
+            <div class="field">
+              <label for="scheduleDay">Day</label>
+              <select id="scheduleDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select>
+            </div>
+            <div class="field">
+              <label for="scheduleSubject">Subject</label>
+              <select id="scheduleSubject"><option>Mathematics</option><option>Science</option><option>English</option><option>Computer Studies</option><option>History</option><option>Filipino</option><option>Physical Education</option><option>Arts</option><option>Other</option></select>
+            </div>
+            <div class="field">
+              <label for="scheduleStart">Start time</label>
+              <input type="time" id="scheduleStart" required>
+            </div>
+            <div class="field">
+              <label for="scheduleEnd">End time</label>
+              <input type="time" id="scheduleEnd" required>
+            </div>
+            <div class="field">
+              <label for="scheduleRoom">Room</label>
+              <input type="text" id="scheduleRoom" maxlength="50" placeholder="Room 201" required>
+            </div>
+            <div class="field">
+              <label for="scheduleTeacher">Teacher</label>
+              <input type="text" id="scheduleTeacher" maxlength="80" placeholder="Instructor" required>
+            </div>
+            <button class="btn primary" onclick="App.saveScheduleSlot()">Save period</button>
+            <button class="btn ghost" onclick="App.resetScheduleEditor()">Clear editor</button>
+          </div>
+          <div id="scheduleManager" class="schedule-list" style="margin-top:16px;"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <h3>Teacher and classroom coverage report</h3>
+          <p class="label" style="margin:6px 0 16px;">Use this when the teacher is absent or a substitute / third person is managing the class.</p>
+          <div id="coverageNotice"></div>
+          <div class="report-form">
+            <div class="field">
+              <label for="coverageSubject">Subject</label>
+              <select id="coverageSubject">
+                <option>Mathematics</option><option>Science</option><option>English</option><option>Computer Studies</option><option>History</option><option>Filipino</option><option>Physical Education</option><option>Arts</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="coverageStatus">Coverage status</label>
+              <select id="coverageStatus"><option>Teacher present</option><option>Teacher absent</option><option>Substitute present</option><option>Class suspended</option></select>
+            </div>
+            <div class="field">
+              <label for="coverageReason">Reason</label>
+              <select id="coverageReason"><option>Official duty</option><option>Sick leave</option><option>Emergency</option><option>Unknown</option><option>Other</option></select>
+            </div>
+            <div class="field">
+              <label for="coverageReporter">Reported by</label>
+              <select id="coverageReporter"><option>Teacher/Substitute</option><option>Student representative</option><option>Third-party representative</option></select>
+            </div>
+            <div class="field full">
+              <label for="coverageNote">Short note</label>
+              <input type="text" id="coverageNote" maxlength="160" placeholder="Optional context for the attendance record">
+            </div>
+            <button class="btn primary full" onclick="App.logClassroomReport()">Save Coverage Report</button>
+          </div>
+          <div id="coverageBoard" class="list" style="margin-top:16px;"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    <span>Smart Attendance Platform</span>
+    <span>Built for efficient classroom operations</span>
+  </footer>
+</div>
+
+<script>
+/**
+ * Smart Attendance Platform Engine - Integrated API Client
+ * Features: PostgreSQL Backend Sync, JWT Token Gateways, WebRTC Optics Engine, SMS Password Recovery
+ */
+
+const CONFIG = Object.freeze({
+  dbName: 'BITCT_AttendanceSystem',
+  dbVersion: 1,
+  storeName: 'records',
+  metaStore: 'metadata',
+  lateThresholdMins: 15,
+  // GitHub Pages is static hosting: no /api server exists unless you explicitly add one.
+  API_BASE_URL: '',
+  REMOTE_API_ENABLED: false
+});
+
+// The HTML file is fully usable on GitHub Pages without a backend.
+// IMPORTANT: client-side authentication is demo/local-only; real security requires a server.
+const LOCAL_FALLBACK_ALLOWED = true;
+const LOCAL_TOKEN_PREFIX = 'local-';
+
+const CLASS_SCHEDULE = Object.freeze([
+  { id: 'mon-math', day: 'Monday', start: '08:00', end: '09:00', subject: 'Mathematics', room: 'Room 201', teacher: 'Instructor' },
+  { id: 'mon-science', day: 'Monday', start: '09:15', end: '10:15', subject: 'Science', room: 'Lab 1', teacher: 'Instructor' },
+  { id: 'tue-english', day: 'Tuesday', start: '08:00', end: '09:00', subject: 'English', room: 'Room 201', teacher: 'Instructor' },
+  { id: 'tue-computing', day: 'Tuesday', start: '09:15', end: '10:15', subject: 'Computer Studies', room: 'Computer Lab', teacher: 'Instructor' },
+  { id: 'wed-history', day: 'Wednesday', start: '08:00', end: '09:00', subject: 'History', room: 'Room 201', teacher: 'Instructor' },
+  { id: 'wed-filipino', day: 'Wednesday', start: '09:15', end: '10:15', subject: 'Filipino', room: 'Room 201', teacher: 'Instructor' },
+  { id: 'thu-pe', day: 'Thursday', start: '08:00', end: '09:00', subject: 'Physical Education', room: 'Gymnasium', teacher: 'Instructor' },
+  { id: 'thu-arts', day: 'Thursday', start: '09:15', end: '10:15', subject: 'Arts', room: 'Studio', teacher: 'Instructor' },
+  { id: 'fri-review', day: 'Friday', start: '08:00', end: '09:00', subject: 'Computer Studies', room: 'Computer Lab', teacher: 'Instructor' },
+  { id: 'fri-advisory', day: 'Friday', start: '09:15', end: '10:15', subject: 'Other', room: 'Room 201', teacher: 'Instructor' }
+]);
+
+/* Local Database Fallback Abstraction Layer */
+class Database {
+  static async getDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
+      request.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(CONFIG.storeName)) {
+          const store = db.createObjectStore(CONFIG.storeName, { keyPath: 'id' });
+          store.createIndex('dateKey', 'dateKey', { unique: false });
+          store.createIndex('studentId', 'studentId', { unique: false });
+        }
+        if (!db.objectStoreNames.contains(CONFIG.metaStore)) {
+          db.createObjectStore(CONFIG.metaStore, { keyPath: 'key' });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  static async executeTransaction(storeName, mode, callback) {
+    const db = await Database.getDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, mode);
+      const store = tx.objectStore(storeName);
+      const request = callback(store);
+      tx.oncomplete = () => resolve(request ? request.result : null);
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  static async putRecord(record) {
+    return Database.executeTransaction(CONFIG.storeName, 'readwrite', store => store.put(record));
+  }
+
+  static async getAllRecords() {
+    return Database.executeTransaction(CONFIG.storeName, 'readonly', store => store.getAll());
+  }
+
+  static async getMeta(key) {
+    return Database.executeTransaction(CONFIG.metaStore, 'readonly', store => store.get(key));
+  }
+
+  static async putMeta(key, value) {
+    return Database.executeTransaction(CONFIG.metaStore, 'readwrite', store => store.put({ key, value }));
+  }
+
+  static async clearAll() {
+    const db = await Database.getDB();
+    const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
+    tx.objectStore(CONFIG.storeName).clear();
+    tx.objectStore(CONFIG.metaStore).clear();
+    return new Promise(res => tx.oncomplete = res);
+  }
+}
+
+/* Navigation Routing System */
+class Router {
+  static navigate(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById(viewId);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+    if (viewId === 'studentView') App.initCamera();
+    else App.stopCamera();
+  }
+}
+
+/* Core Application Logic */
+class App {
+  static mediaStream = null;
+  static capturedBlob = null;
+  static schedule = [...CLASS_SCHEDULE];
+  static authFailures = 0;
+  static authLockedUntil = 0;
+  static resetFailures = 0;
+  static resetLockedUntil = 0;
+  static currentUser = null;
+
+  static async hashSecret(secret, saltHex = null) {
+    if (!window.crypto || !window.crypto.subtle) {
+      throw new Error('Secure browser cryptography is unavailable. Open this page in a modern browser.');
+    }
+    const salt = saltHex ? Uint8Array.from(saltHex.match(/.{1,2}/g).map(h => parseInt(h, 16))) : crypto.getRandomValues(new Uint8Array(16));
+    const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 210000, hash: 'SHA-256' }, keyMaterial, 256);
+    return { salt: Array.from(salt, b => b.toString(16).padStart(2, '0')).join(''), hash: Array.from(new Uint8Array(bits), b => b.toString(16).padStart(2, '0')).join('') };
+  }
+
+  static async verifySecret(secret, stored) {
+    if (!stored) return false;
+    // New accounts use salted PBKDF2.
+    if (stored.salt && stored.hash) {
+      const derived = await App.hashSecret(secret, stored.salt);
+      return derived.hash === stored.hash;
+    }
+    // Legacy SHA-256 records are accepted once, then upgraded on successful login.
+    if (typeof stored === 'string') {
+      const bytes = new TextEncoder().encode(secret);
+      const digest = await crypto.subtle.digest('SHA-256', bytes);
+      const legacy = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
+      return legacy === stored;
+    }
+    return false;
+  }
+
+  static async randomDigits(length) {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return String(values[0] % (10 ** length)).padStart(length, '0');
+  }
+
+  static showNotice(id, message, type) {
+    const notice = document.getElementById(id);
+    notice.replaceChildren();
+    const box = document.createElement('div');
+    box.className = `notice ${type}`;
+    box.textContent = message;
+    notice.appendChild(box);
+  }
+
+  static updateConnectionState() {
+    const indicator = document.getElementById('connectionState');
+    if (!indicator) return;
+    const online = navigator.onLine;
+    indicator.textContent = online ? 'Network online' : 'Offline mode';
+    indicator.style.background = online ? '#ede9fe' : '#fef3c7';
+    indicator.style.color = online ? '#5b21b6' : '#92400e';
+  }
+
+  static setBackendStatus(status) {
+    const statusElement = document.getElementById('backendStatus');
+    if (statusElement) statusElement.textContent = status;
+  }
+
+  static async init() {
+    await App.ensureInstructorStore();
+    await App.syncSession();
+    await App.loadSchedule();
+    App.renderSchedule();
+    App.renderScheduleManager();
+    App.updateClockDisplay();
+    App.updateConnectionState();
+    if (!CONFIG.REMOTE_API_ENABLED) App.setBackendStatus('GitHub local mode');
+    window.addEventListener('online', App.updateConnectionState);
+    window.addEventListener('offline', App.updateConnectionState);
+    setInterval(App.updateClockDisplay, 30000);
+    
+    const addInstructorForm = document.getElementById('addInstructorForm');
+    if (addInstructorForm) addInstructorForm.addEventListener('submit', App.addInstructor);
+
+    // Never trust role/identity values from sessionStorage alone. A public page can be inspected and edited.
+    // The server must validate the token before granting protected API access.
+    if (sessionStorage.getItem('authToken') && !LOCAL_FALLBACK_ALLOWED) {
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('authRole');
+      sessionStorage.removeItem('authUsername');
+    App.currentUser = null;
+    }
+    
+    await App.refreshDashboard();
+  }
+
+  static updateClockDisplay() {
+    const now = new Date();
+    const homeState = document.getElementById('homeSessionState');
+    if (homeState) {
+      homeState.textContent = `Local time: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}`;
+    }
+    const deskClock = document.getElementById('deskClock');
+    if (deskClock) {
+      deskClock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    const deskSessionCode = document.getElementById('deskSessionCode');
+    if (deskSessionCode) {
+      const code = document.getElementById('homeCode')?.textContent?.trim();
+      deskSessionCode.textContent = code || '--';
+    }
+  }
+
+  static async loadSchedule() {
+    if (CONFIG.REMOTE_API_ENABLED) try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/schedule`);
+      if (response.ok) {
+        const remoteSchedule = await response.json();
+        if (Array.isArray(remoteSchedule) && remoteSchedule.length) {
+          App.schedule = remoteSchedule;
+          await Database.putMeta('class_schedule', App.schedule);
+          App.setBackendStatus('Cloud available');
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn('Shared schedule API unavailable; using local schedule.', error);
+    }
+    const saved = await Database.getMeta('class_schedule');
+    if (saved && Array.isArray(saved.value) && saved.value.length) {
+      App.schedule = saved.value;
+    } else {
+      App.schedule = [...CLASS_SCHEDULE];
+      await Database.putMeta('class_schedule', App.schedule);
+    }
+  }
+
+  static getScheduleSlot(id) {
+    return App.schedule.find(slot => slot.id === id);
+  }
+
+  static renderSchedule() {
+    const now = new Date();
+    const today = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const scheduleBoard = document.getElementById('scheduleBoard');
+    const scheduleSelect = document.getElementById('scheduleSelect');
+    const scheduleSummary = document.getElementById('scheduleSummary');
+    const todaySlots = App.schedule.filter(slot => slot.day === today);
+
+    if (scheduleSummary) {
+      scheduleSummary.textContent = todaySlots.length
+        ? `Today: ${today} • ${todaySlots.length} scheduled period${todaySlots.length > 1 ? 's' : ''}`
+        : `Today: ${today} • No scheduled periods`;
+    }
+
+    if (scheduleBoard) {
+      scheduleBoard.replaceChildren();
+      App.schedule.forEach(slot => {
+        const slotStart = Number(slot.start.slice(0, 2)) * 60 + Number(slot.start.slice(3));
+        const slotEnd = Number(slot.end.slice(0, 2)) * 60 + Number(slot.end.slice(3));
+        const isActive = slot.day === today && currentMinutes >= slotStart && currentMinutes < slotEnd;
+        const item = document.createElement('div');
+        item.className = `schedule-item${slot.day === today ? ' current' : ''}${isActive ? ' active' : ''}`;
+        const day = document.createElement('div');
+        day.className = 'schedule-day';
+        day.textContent = slot.day;
+        const details = document.createElement('div');
+        const subject = document.createElement('div');
+        subject.className = 'schedule-subject';
+        subject.textContent = slot.subject;
+        const meta = document.createElement('div');
+        meta.className = 'schedule-meta';
+        meta.textContent = `${slot.room} • ${slot.teacher}`;
+        details.append(subject, meta);
+        const time = document.createElement('div');
+        time.className = 'schedule-time';
+        time.textContent = `${slot.start}–${slot.end}`;
+        item.append(day, details, time);
+        scheduleBoard.appendChild(item);
+      });
+    }
+
+    if (scheduleSelect) {
+      const selectedScheduleId = scheduleSelect.value;
+      scheduleSelect.replaceChildren();
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select a scheduled period';
+      scheduleSelect.appendChild(placeholder);
+      App.schedule.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot.id;
+        option.textContent = `${slot.day} • ${slot.start}–${slot.end} • ${slot.subject}`;
+        scheduleSelect.appendChild(option);
+      });
+      if (App.getScheduleSlot(selectedScheduleId)) scheduleSelect.value = selectedScheduleId;
+    }
+  }
+
+  static renderScheduleManager() {
+    const manager = document.getElementById('scheduleManager');
+    if (!manager) return;
+    manager.replaceChildren();
+
+    if (!App.schedule.length) {
+      const empty = document.createElement('div');
+      empty.className = 'label';
+      empty.textContent = 'No periods configured.';
+      manager.appendChild(empty);
+      return;
+    }
+
+    const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const sortedSchedule = [...App.schedule].sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day) || a.start.localeCompare(b.start));
+    sortedSchedule.forEach(slot => {
+      const item = document.createElement('div');
+      item.className = 'schedule-item';
+      const day = document.createElement('div');
+      day.className = 'schedule-day';
+      day.textContent = slot.day;
+      const details = document.createElement('div');
+      const subject = document.createElement('div');
+      subject.className = 'schedule-subject';
+      subject.textContent = slot.subject;
+      const meta = document.createElement('div');
+      meta.className = 'schedule-meta';
+      meta.textContent = `${slot.start}–${slot.end} • ${slot.room} • ${slot.teacher}`;
+      details.append(subject, meta);
+      const actions = document.createElement('div');
+      actions.className = 'schedule-actions';
+      const edit = document.createElement('button');
+      edit.className = 'btn ghost';
+      edit.type = 'button';
+      edit.textContent = 'Edit';
+      edit.onclick = () => App.editScheduleSlot(slot.id);
+      const remove = document.createElement('button');
+      remove.className = 'btn danger';
+      remove.type = 'button';
+      remove.textContent = 'Remove';
+      remove.onclick = () => App.removeScheduleSlot(slot.id);
+      actions.append(edit, remove);
+      item.append(day, details, actions);
+      manager.appendChild(item);
+    });
+  }
+
+  static resetScheduleEditor() {
+    document.getElementById('scheduleEditId').value = '';
+    document.getElementById('scheduleDay').value = 'Monday';
+    document.getElementById('scheduleSubject').value = 'Mathematics';
+    document.getElementById('scheduleStart').value = '';
+    document.getElementById('scheduleEnd').value = '';
+    document.getElementById('scheduleRoom').value = '';
+    document.getElementById('scheduleTeacher').value = '';
+    App.showNotice('scheduleNotice', 'Editor cleared. Add a new class period.', 'ok');
+  }
+
+  static editScheduleSlot(id) {
+    const slot = App.getScheduleSlot(id);
+    if (!slot) return;
+    document.getElementById('scheduleEditId').value = slot.id;
+    document.getElementById('scheduleDay').value = slot.day;
+    document.getElementById('scheduleSubject').value = slot.subject;
+    document.getElementById('scheduleStart').value = slot.start;
+    document.getElementById('scheduleEnd').value = slot.end;
+    document.getElementById('scheduleRoom').value = slot.room;
+    document.getElementById('scheduleTeacher').value = slot.teacher;
+    document.getElementById('scheduleNotice').replaceChildren();
+    document.getElementById('scheduleStart').focus();
+  }
+
+  static async saveScheduleSlot() {
+    const editId = document.getElementById('scheduleEditId').value;
+    const day = document.getElementById('scheduleDay').value;
+    const subject = document.getElementById('scheduleSubject').value;
+    const start = document.getElementById('scheduleStart').value;
+    const end = document.getElementById('scheduleEnd').value;
+    const room = document.getElementById('scheduleRoom').value.trim();
+    const teacher = document.getElementById('scheduleTeacher').value.trim();
+
+    if (!start || !end || !room || !teacher || start >= end) {
+      App.showNotice('scheduleNotice', 'Enter complete period details and make sure the end time is after the start time.', 'bad');
+      return;
+    }
+
+    const startMinutes = Number(start.slice(0, 2)) * 60 + Number(start.slice(3));
+    const endMinutes = Number(end.slice(0, 2)) * 60 + Number(end.slice(3));
+    const overlap = App.schedule.find(slot => {
+      if (slot.id === editId || slot.day !== day) return false;
+      const slotStart = Number(slot.start.slice(0, 2)) * 60 + Number(slot.start.slice(3));
+      const slotEnd = Number(slot.end.slice(0, 2)) * 60 + Number(slot.end.slice(3));
+      return startMinutes < slotEnd && endMinutes > slotStart;
+    });
+    if (overlap) {
+      App.showNotice('scheduleNotice', `${day} already has an overlapping period from ${overlap.start} to ${overlap.end}.`, 'bad');
+      return;
+    }
+
+    const updatedSlot = { id: editId || `schedule-${Date.now()}-${await App.randomDigits(4)}`, day, start, end, subject, room, teacher };
+    App.schedule = editId ? App.schedule.map(slot => slot.id === editId ? updatedSlot : slot) : [...App.schedule, updatedSlot];
+    await Database.putMeta('class_schedule', App.schedule);
+    await App.syncScheduleToServer();
+    App.renderSchedule();
+    App.renderScheduleManager();
+    App.resetScheduleEditor();
+    App.showNotice('scheduleNotice', `${subject} was ${editId ? 'updated' : 'added'} to the class schedule.`, 'ok');
+  }
+
+  static async removeScheduleSlot(id) {
+    const slot = App.getScheduleSlot(id);
+    if (!slot) return;
+    const records = await Database.getAllRecords();
+    if (records.some(record => record.recordType !== 'classroom_report' && record.scheduleId === id)) {
+      App.showNotice('scheduleNotice', 'This period has attendance history and cannot be removed. Edit it instead to preserve reporting accuracy.', 'bad');
+      return;
+    }
+    if (!confirm(`Remove ${slot.subject} on ${slot.day} from the schedule?`)) return;
+    App.schedule = App.schedule.filter(scheduleSlot => scheduleSlot.id !== id);
+    await Database.putMeta('class_schedule', App.schedule);
+    await App.syncScheduleToServer();
+    App.renderSchedule();
+    App.renderScheduleManager();
+    App.showNotice('scheduleNotice', `${slot.subject} was removed from the schedule.`, 'ok');
+  }
+
+  static getTodayKey() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  static async syncScheduleToServer() {
+    const token = sessionStorage.getItem('authToken');
+    if (!token || token.startsWith(LOCAL_TOKEN_PREFIX) || !CONFIG.REMOTE_API_ENABLED) return;
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/schedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ schedule: App.schedule })
+      });
+      if (!response.ok) throw new Error('Schedule sync failed');
+      App.setBackendStatus('Cloud synced');
+    } catch (error) {
+      console.warn('Schedule API unavailable; keeping the local schedule.', error);
+      App.setBackendStatus('Local fallback');
+    }
+  }
+
+  static async syncSession() {
+    if (CONFIG.REMOTE_API_ENABLED) try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/session`);
+      if (response.ok) {
+        const remoteSession = await response.json();
+        await Database.putMeta('current_session', remoteSession);
+        document.getElementById('homeCode').textContent = remoteSession.code;
+        document.getElementById('deskSessionCode').textContent = remoteSession.code;
+        App.updateClockDisplay();
+        App.setBackendStatus('Cloud available');
+        return remoteSession;
+      }
+    } catch (error) {
+      console.warn('Shared session API unavailable; using local session.', error);
+    }
+    let session = await Database.getMeta('current_session');
+    const today = App.getTodayKey();
+    
+    if (!session || !session.value || session.value.date !== today) {
+      const randomCode = await App.randomDigits(6);
+      session = {
+        key: 'current_session',
+        value: { date: today, code: randomCode, startedAt: new Date().toISOString() }
+      };
+      await Database.putMeta('current_session', session.value);
+    }
+    
+    document.getElementById('homeCode').textContent = session.value.code;
+    document.getElementById('deskSessionCode').textContent = session.value.code;
+    App.updateClockDisplay();
+    return session.value;
+  }
+
+  static async generateNewSession() {
+    if (!sessionStorage.getItem('authToken')) {
+      App.showNotice('homeNotice', 'Only an authenticated instructor can refresh the session passcode.', 'bad');
+      return;
+    }
+    if (CONFIG.REMOTE_API_ENABLED) try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/session`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` }
+      });
+      if (response.ok) {
+        await App.syncSession();
+        return;
+      }
+    } catch (error) {
+      console.warn('Shared session API unavailable; refreshing local session.', error);
+    }
+    const randomCode = await App.randomDigits(6);
+    await Database.putMeta('current_session', { date: App.getTodayKey(), code: randomCode, startedAt: new Date().toISOString() });
+    await App.syncSession();
+  }
+
+  static async initCamera() {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Camera API unavailable');
+      App.mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      const video = document.getElementById('webcam');
+      video.srcObject = App.mediaStream;
+      video.classList.remove('hidden');
+      document.getElementById('photoCanvas').classList.add('hidden');
+      document.getElementById('cameraNotice').classList.add('hidden');
+    } catch (e) {
+      console.warn("Camera fallback applied or permission denied.", e);
+      document.getElementById('cameraNotice').classList.remove('hidden');
+    }
+  }
+
+  static stopCamera() {
+    if (App.mediaStream) {
+      App.mediaStream.getTracks().forEach(track => track.stop());
+      App.mediaStream = null;
+    }
+  }
+
+  static capturePhoto() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('photoCanvas');
+    if (!video.srcObject) {
+      document.getElementById('cameraNotice').classList.remove('hidden');
+      return;
+    }
+
+    canvas.width = video.videoWidth || 320;
+    canvas.height = video.videoHeight || 240;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      App.capturedBlob = blob;
+      video.classList.add('hidden');
+      canvas.classList.remove('hidden');
+    }, 'image/jpeg', 0.8);
+  }
+
+  static resetCamera() {
+    App.capturedBlob = null;
+    document.getElementById('photoCanvas').classList.add('hidden');
+    document.getElementById('webcam').classList.remove('hidden');
+  }
+
+  static async handleCheckIn(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('studentName').value.trim();
+    const studentId = document.getElementById('studentId').value.trim();
+    const subject = document.getElementById('subjectSelect').value.trim();
+    const attendanceType = document.getElementById('attendanceType').value;
+    const absenceReason = document.getElementById('absenceReason').value.trim();
+    const reporterRole = document.getElementById('reporterRole').value;
+    const teacherStatus = document.getElementById('teacherStatus').value;
+    const scheduleId = document.getElementById('scheduleSelect').value;
+    const scheduleSlot = App.getScheduleSlot(scheduleId);
+    const code = document.getElementById('sessionCodeInput').value.trim();
+
+    if (!name || name.length > 80 || !studentId || studentId.length > 32 || !subject || !scheduleSlot || !/^\d{6}$/.test(code)) {
+      App.showNotice('studentNotice', 'Enter a valid name, subject, scheduled period, and six-digit session code.', 'bad');
+      return;
+    }
+
+    if (subject !== scheduleSlot.subject) {
+      App.showNotice('studentNotice', `The selected subject does not match the ${scheduleSlot.day} ${scheduleSlot.start} period.`, 'bad');
+      return;
+    }
+
+    if (attendanceType === 'absent' && !absenceReason) {
+      App.showNotice('studentNotice', 'Please select a reason when the student is absent.', 'bad');
+      return;
+    }
+
+    if (attendanceType !== 'absent' && absenceReason) {
+      App.showNotice('studentNotice', 'The absence reason only applies to absent records.', 'warn');
+      return;
+    }
+
+    const session = await App.syncSession();
+    if (code !== session.code) {
+      App.showNotice('studentNotice', 'Invalid active session passcode.', 'bad');
+      return;
+    }
+
+    const allRecords = await Database.getAllRecords();
+    const duplicate = allRecords.find(r => r.recordType !== 'classroom_report' && r.studentId === studentId && r.subject === subject && r.dateKey === App.getTodayKey());
+    if (duplicate) {
+      App.showNotice('studentNotice', `This student has already been recorded for ${subject} today.`, 'warn');
+      return;
+    }
+
+    const now = new Date();
+    const sessionStart = new Date(session.startedAt);
+    const diffMins = (now - sessionStart) / (1000 * 60);
+    const isLate = attendanceType === 'late' || (attendanceType !== 'absent' && diffMins > CONFIG.lateThresholdMins);
+    const status = attendanceType === 'absent' ? 'absent' : (isLate ? 'late' : 'present');
+    const normalizedReason = attendanceType === 'absent' ? absenceReason : (status === 'late' ? 'Late arrival' : 'Present');
+    const normalizedTeacherStatus = teacherStatus || 'Teacher present';
+
+    const payload = {
+      studentId,
+      studentName: name,
+      sessionCode: session.code,
+      subject,
+      scheduleId,
+      scheduleLabel: `${scheduleSlot.day} ${scheduleSlot.start}–${scheduleSlot.end}`,
+      status,
+      reason: normalizedReason,
+      reporterRole,
+      teacherStatus: normalizedTeacherStatus,
+      photoUrl: '',
+      flags: [
+        ...(isLate ? ['LATE_ENTRY'] : []),
+        ...(status === 'absent' && normalizedReason === 'Teacher absent' ? ['TEACHER_ABSENT'] : []),
+        ...(reporterRole === 'Third-party representative' ? ['THIRD_PARTY_REPORT'] : []),
+        ...(App.capturedBlob ? [] : ['NO_CAMERA_PROOF'])
+      ]
+    };
+
+    try {
+      if (CONFIG.REMOTE_API_ENABLED) try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(sessionStorage.getItem('authToken') ? { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` } : {}) },
+          body: JSON.stringify(payload)
+        });
+        if (response.status === 409) {
+          App.showNotice('studentNotice', 'This student already has an attendance record for this subject today.', 'warn');
+          return;
+        }
+        if (!response.ok) throw new Error('Remote attendance request failed');
+        App.setBackendStatus('Cloud synced');
+      } catch (remoteError) {
+        console.warn('Remote API unavailable; saving attendance locally.', remoteError);
+        App.setBackendStatus('Local fallback');
+      }
+
+      await Database.putRecord({
+        id: window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${await App.randomDigits(6)}`,
+        recordType: 'attendance',
+        studentId,
+        name,
+        subject,
+        scheduleId,
+        scheduleLabel: `${scheduleSlot.day} ${scheduleSlot.start}–${scheduleSlot.end}`,
+        reason: normalizedReason,
+        reporterRole,
+        teacherStatus: normalizedTeacherStatus,
+        dateKey: App.getTodayKey(),
+        timestamp: now.toISOString(),
+        status,
+        flags: payload.flags
+      });
+
+      App.showNotice('studentNotice', `Attendance recorded for ${subject}${status === 'absent' ? ` because ${normalizedReason.toLowerCase()}` : ''}${App.capturedBlob ? ' with optical proof' : ''}.`, 'ok');
+
+      setTimeout(() => {
+        document.getElementById('checkinForm').reset();
+        document.getElementById('attendanceType').value = 'present';
+        document.getElementById('absenceReason').value = '';
+        document.getElementById('reporterRole').value = 'Student';
+        document.getElementById('teacherStatus').value = 'Teacher present';
+        document.getElementById('scheduleSelect').value = '';
+        App.resetCamera();
+        Router.navigate('homeView');
+        App.refreshDashboard();
+      }, 1500);
+
+    } catch (err) {
+      App.showNotice('studentNotice', 'Attendance could not be saved locally. Try again.', 'bad');
+    }
+  }
+
+  static async getInstructors() {
+    const saved = await Database.getMeta('instructors');
+    return saved && Array.isArray(saved.value) ? saved.value : [];
+  }
+
+  static async saveInstructors(instructors) {
+    await Database.putMeta('instructors', instructors);
+  }
+
+  static async ensureInstructorStore() {
+    const instructors = await App.getInstructors();
+    if (!instructors.length) {
+      await App.saveInstructors([]);
+    }
+    return instructors;
+  }
+
+  static renderInstructorManagement() {
+    const panel = document.getElementById('adminManagementPanel');
+    const list = document.getElementById('instructorList');
+    if (!panel || !list) return;
+
+    const isAdmin = App.currentUser && App.currentUser.role === 'admin';
+    panel.classList.toggle('hidden', !isAdmin);
+    if (!isAdmin) return;
+
+    App.getInstructors().then(instructors => {
+      list.replaceChildren();
+      if (!instructors.length) {
+        const empty = document.createElement('div');
+        empty.className = 'label';
+        empty.textContent = 'No instructor accounts yet. Add the first instructor above.';
+        list.appendChild(empty);
+        return;
+      }
+
+      instructors.forEach(instructor => {
+        const item = document.createElement('div');
+        item.className = 'item';
+
+        const details = document.createElement('div');
+        const name = document.createElement('strong');
+        name.textContent = instructor.name;
+        const meta = document.createElement('div');
+        meta.className = 'label';
+        meta.textContent = `@${instructor.username} • ${instructor.subjects || 'No subjects assigned'} • ${instructor.active ? 'Active' : 'Inactive'}`;
+        details.append(name, meta);
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '6px';
+        actions.style.flexWrap = 'wrap';
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = `btn ${instructor.active ? 'warning' : 'primary'}`;
+        toggle.textContent = instructor.active ? 'Deactivate' : 'Activate';
+        toggle.onclick = () => App.toggleInstructor(instructor.username);
+
+        const reset = document.createElement('button');
+        reset.type = 'button';
+        reset.className = 'btn ghost';
+        reset.textContent = 'Reset password';
+        reset.onclick = () => App.resetInstructorPassword(instructor.username);
+
+        actions.append(toggle, reset);
+        item.append(details, actions);
+        list.appendChild(item);
+      });
+    });
+  }
+
+  static async addInstructor(event) {
+    event.preventDefault();
+
+    if (!App.currentUser || App.currentUser.role !== 'admin') {
+      App.showNotice('instructorManagementNotice', 'Only an administrator can add instructors.', 'bad');
+      return;
+    }
+
+    const name = document.getElementById('newInstructorName').value.trim();
+    const username = document.getElementById('newInstructorUsername').value.trim().toLowerCase();
+    const password = document.getElementById('newInstructorPassword').value;
+    const subjects = document.getElementById('newInstructorSubjects').value.trim();
+    const phoneRaw = document.getElementById('newInstructorPhone').value.trim();
+    const phone = App.normalizePhilippinePhone(phoneRaw);
+
+    if (!/^[A-Za-z0-9._-]{3,32}$/.test(username)) {
+      App.showNotice('instructorManagementNotice', 'Username must be 3–32 characters and use only letters, numbers, dot, underscore, or hyphen.', 'bad');
+      return;
+    }
+    if (!phone) {
+      App.showNotice('instructorManagementNotice', 'Enter a valid Philippine mobile number, such as 09171234567.', 'bad');
+      return;
+    }
+    if (name.length < 2 || name.length > 80) {
+      App.showNotice('instructorManagementNotice', 'Enter a valid instructor name.', 'bad');
+      return;
+    }
+    if (password.length < 10 || password.length > 128 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      App.showNotice('instructorManagementNotice', 'Temporary password must be 10–128 characters and include uppercase, lowercase, and a number.', 'bad');
+      return;
+    }
+
+    const instructors = await App.getInstructors();
+    if (username === 'admin' || instructors.some(i => i.username === username)) {
+      App.showNotice('instructorManagementNotice', 'That username is already reserved or already exists.', 'bad');
+      return;
+    }
+
+    const passwordHash = await App.hashSecret(password);
+    instructors.push({
+      id: `inst-${Date.now()}-${await App.randomDigits(4)}`,
+      name,
+      username,
+      passwordHash,
+      subjects: subjects.slice(0, 200),
+      phone,
+      active: true,
+      createdAt: new Date().toISOString(),
+      createdBy: 'admin'
+    });
+
+    await App.saveInstructors(instructors);
+    try {
+      const token = sessionStorage.getItem('authToken');
+      if (CONFIG.REMOTE_API_ENABLED && token && !token.startsWith(LOCAL_TOKEN_PREFIX)) {
+        const syncRes = await fetch(`${CONFIG.API_BASE_URL}/api/auth/admin-provision-instructor`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ name, username, phone, subjects: subjects.slice(0, 200), password })
+        });
+        if (!syncRes.ok) {
+          const syncData = await syncRes.json().catch(() => ({}));
+          throw new Error(syncData.error || 'Server provisioning failed.');
+        }
+      }
+    } catch (syncError) {
+      App.showNotice('instructorManagementNotice', `${name} was saved locally, but server recovery setup failed: ${syncError.message}`, 'warn');
+      App.renderInstructorManagement();
+      return;
+    }
+    document.getElementById('addInstructorForm').reset();
+    App.showNotice('instructorManagementNotice', `${name} was added successfully. They can now sign in with @${username}.`, 'ok');
+    App.renderInstructorManagement();
+  }
+
+  static async toggleInstructor(username) {
+    if (!App.currentUser || App.currentUser.role !== 'admin') return;
+    const instructors = await App.getInstructors();
+    const instructor = instructors.find(i => i.username === username);
+    if (!instructor) return;
+
+    instructor.active = !instructor.active;
+    await App.saveInstructors(instructors);
+    App.showNotice('instructorManagementNotice', `${instructor.name} is now ${instructor.active ? 'active' : 'inactive'}.`, 'ok');
+    App.renderInstructorManagement();
+  }
+
+  static async resetInstructorPassword(username) {
+    if (!App.currentUser || App.currentUser.role !== 'admin') return;
+    const instructors = await App.getInstructors();
+    const instructor = instructors.find(i => i.username === username);
+    if (!instructor) return;
+
+    const newPassword = prompt(`Set a new password for ${instructor.name}:`);
+    if (newPassword === null) return;
+    if (newPassword.length < 6 || newPassword.length > 128) {
+      App.showNotice('instructorManagementNotice', 'Password must be 10–128 characters and include uppercase, lowercase, and a number.', 'bad');
+      return;
+    }
+
+    instructor.passwordHash = await App.hashSecret(newPassword);
+    instructor.passwordChangedAt = new Date().toISOString();
+    await App.saveInstructors(instructors);
+    App.showNotice('instructorManagementNotice', `Password reset for ${instructor.name}.`, 'ok');
+  }
+
+  static async authenticateInstructor() {
+    const username = document.getElementById('instructorUsername').value.trim().toLowerCase();
+    const password = document.getElementById('pinInput').value;
+
+    if (Date.now() < App.authLockedUntil) {
+      App.showNotice('authNotice', 'Too many failed attempts. Try again in one minute.', 'bad');
+      return;
+    }
+    if (!username || username.length > 32 || !password || password.length > 128) {
+      App.showNotice('authNotice', 'Enter a valid username and password.', 'bad');
+      return;
+    }
+
+    try {
+      const instructors = await App.getInstructors();
+      const storedHash = localStorage.getItem('instructorPinHash');
+      const legacyPin = localStorage.getItem('instructorPin');
+      let adminVerified = false;
+      if (storedHash) adminVerified = await App.verifySecret(password, (() => { try { return JSON.parse(storedHash); } catch { return storedHash; } })());
+      else if (legacyPin) adminVerified = password === legacyPin;
+      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin') {
+        // Local-only development bootstrap. Public deployments never reach this branch.
+        adminVerified = password === '2468';
+      }
+
+      // Built-in local administrator is strictly limited to localhost.
+      if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && adminVerified) {
+        if (!storedHash || typeof storedHash === 'string') {
+          const upgraded = await App.hashSecret(password);
+          localStorage.setItem('instructorPinHash', JSON.stringify(upgraded));
+          localStorage.removeItem('instructorPin');
+        }
+        App.currentUser = { username: 'admin', name: 'System Administrator', role: 'admin', subjects: 'All subjects' };
+        sessionStorage.setItem('authToken', 'local-admin-token');
+        sessionStorage.setItem('authRole', 'admin');
+        sessionStorage.setItem('authUsername', 'admin');
+        App.authFailures = 0;
+        App.setBackendStatus('Local admin');
+        document.getElementById('instructorAuth').classList.add('hidden');
+        document.getElementById('instructorDesk').classList.remove('hidden');
+        App.renderInstructorManagement();
+        await App.refreshDashboard();
+        return;
+      }
+
+      // Instructor accounts created by the administrator.
+      const instructor = instructors.find(i => i.username === username);
+      if (LOCAL_FALLBACK_ALLOWED && instructor && instructor.active && await App.verifySecret(password, instructor.passwordHash)) {
+        App.currentUser = {
+          username: instructor.username,
+          name: instructor.name,
+          role: 'instructor',
+          subjects: instructor.subjects || ''
+        };
+        sessionStorage.setItem('authToken', 'local-instructor-token');
+        sessionStorage.setItem('authRole', 'instructor');
+        sessionStorage.setItem('authUsername', instructor.username);
+        App.authFailures = 0;
+        App.setBackendStatus('Local instructor');
+        document.getElementById('instructorAuth').classList.add('hidden');
+        document.getElementById('instructorDesk').classList.remove('hidden');
+        App.renderInstructorManagement();
+        await App.refreshDashboard();
+        return;
+      }
+
+      if (instructor && !instructor.active) {
+        App.showNotice('authNotice', 'This instructor account is inactive. Ask an administrator to activate it.', 'bad');
+        return;
+      }
+    } catch (error) {
+      App.showNotice('authNotice', error.message || 'Unable to read local instructor accounts.', 'bad');
+      return;
+    }
+
+
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      sessionStorage.setItem('authToken', data.token);
+      sessionStorage.setItem('authRole', 'instructor');
+      sessionStorage.setItem('authUsername', username);
+      App.currentUser = { username, name: data.name || username, role: data.role || 'instructor', subjects: data.subjects || '' };
+      App.authFailures = 0;
+
+      document.getElementById('instructorAuth').classList.add('hidden');
+      document.getElementById('instructorDesk').classList.remove('hidden');
+      document.getElementById('authNotice').replaceChildren();
+      
+      await App.refreshDashboard();
+
+    } catch (err) {
+      App.authFailures += 1;
+      if (App.authFailures >= 5) App.authLockedUntil = Date.now() + 60000;
+      App.updateConnectionState();
+      App.showNotice('authNotice', LOCAL_FALLBACK_ALLOWED
+        ? 'The system is currently unavailable. Please check your connection or use the local admin fallback.'
+        : 'The instructor service is currently unavailable. Please check the connection and try again.', 'bad');
+    }
+  }
+
+  static showForgotPassword(show) {
+    const authForm = document.getElementById('instructorAuth');
+    const resetForm = document.getElementById('forgotPasswordForm');
+    
+    if (show) {
+      authForm.classList.add('hidden');
+      resetForm.classList.remove('hidden');
+    } else {
+      resetForm.classList.add('hidden');
+      authForm.classList.remove('hidden');
+    }
+  }
+
+  static normalizePhilippinePhone(input) {
+    const digits = String(input || '').replace(/[^0-9+]/g, '');
+    if (/^09\d{9}$/.test(digits)) return '63' + digits.slice(1);
+    if (/^639\d{9}$/.test(digits)) return digits;
+    if (/^\+639\d{9}$/.test(digits)) return digits.slice(1);
+    if (/^9\d{9}$/.test(digits)) return '63' + digits;
+    return null;
+  }
+
+  static async requestResetCode() {
+    const phoneInput = document.getElementById('resetPhone').value.trim();
+    const phone = App.normalizePhilippinePhone(phoneInput);
+
+    if (!phone) {
+      App.showNotice('resetNotice', 'Please enter a valid Philippine mobile number.', 'bad');
+      return;
+    }
+
+    if (Date.now() < App.resetLockedUntil) {
+      App.showNotice('resetNotice', 'Too many reset attempts. Try again in one minute.', 'bad');
+      return;
+    }
+
+    // GitHub/static mode: generate a one-time local recovery code.
+    // Real SMS delivery requires a server-side provider and must not be implemented
+    // with provider credentials inside this HTML file.
+    if (!CONFIG.REMOTE_API_ENABLED) {
+      const instructors = await App.getInstructors();
+      const instructor = instructors.find(i => i.phone === phone);
+
+      // Do not reveal whether a phone number exists.
+      const code = await App.randomDigits(6);
+      const challengeId = window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${await App.randomDigits(6)}`;
+      const codeHash = await App.hashSecret(code);
+
+      await Database.putMeta('reset_challenge', {
+        phone,
+        challengeId,
+        codeHash,
+        expiresAt: Date.now() + 10 * 60 * 1000,
+        attempts: 0,
+        instructorUsername: instructor ? instructor.username : ''
+      });
+
+      sessionStorage.setItem('resetPhone', phone);
+      sessionStorage.setItem('resetChallengeId', challengeId);
+      document.getElementById('resetStep1').classList.add('hidden');
+      document.getElementById('resetStep2').classList.remove('hidden');
+
+      // In static mode this is intentionally shown for local/demo testing only.
+      App.showNotice('resetNotice',
+        `Static GitHub mode: your one-time recovery code is ${code}. It expires in 10 minutes.`,
+        'ok');
+      document.getElementById('smsCodeInput').value = code;
+      return;
+    }
+
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Request failed.');
+
+      App.showNotice('resetNotice',
+        'A one-time verification code was sent by the configured recovery provider. Do not share that code.',
+        'ok');
+      sessionStorage.setItem('resetPhone', phone);
+      sessionStorage.setItem('resetChallengeId', data.challengeId || '');
+      document.getElementById('resetStep1').classList.add('hidden');
+      document.getElementById('resetStep2').classList.remove('hidden');
+    } catch (err) {
+      App.resetFailures += 1;
+      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
+      App.showNotice('resetNotice', err.message || 'Password recovery is temporarily unavailable.', 'warn');
+    }
+  }
+
+  static async submitPasswordReset() {
+    const phone = App.normalizePhilippinePhone(document.getElementById('resetPhone').value.trim());
+    const code = document.getElementById('smsCodeInput').value.trim();
+    const newPassword = document.getElementById('newPasswordInput').value;
+
+    if (Date.now() < App.resetLockedUntil) {
+      App.showNotice('resetNotice', 'Too many reset attempts. Try again in one minute.', 'bad');
+      return;
+    }
+
+    if (!phone || !/^\d{6}$/.test(code) ||
+        newPassword.length < 10 || newPassword.length > 128 ||
+        !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      App.resetFailures += 1;
+      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
+      App.showNotice('resetNotice',
+        'Enter the six-digit code and a password of 10–128 characters with uppercase, lowercase, and a number.',
+        'bad');
+      return;
+    }
+
+    if (!CONFIG.REMOTE_API_ENABLED) {
+      const challengeRecord = await Database.getMeta('reset_challenge');
+      const challenge = challengeRecord && challengeRecord.value;
+      const challengeId = sessionStorage.getItem('resetChallengeId') || '';
+
+      if (!challenge || challenge.challengeId !== challengeId ||
+          challenge.phone !== phone || Date.now() > challenge.expiresAt) {
+        App.showNotice('resetNotice', 'The recovery code is invalid or expired. Request a new code.', 'bad');
+        return;
+      }
+
+      if ((challenge.attempts || 0) >= 5) {
+        App.resetLockedUntil = Date.now() + 60000;
+        App.showNotice('resetNotice', 'Too many invalid recovery attempts. Try again in one minute.', 'bad');
+        return;
+      }
+
+      const validCode = await App.verifySecret(code, challenge.codeHash);
+      if (!validCode) {
+        challenge.attempts = (challenge.attempts || 0) + 1;
+        await Database.putMeta('reset_challenge', challenge);
+        App.resetFailures += 1;
+        if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
+        App.showNotice('resetNotice', 'Invalid recovery code. Please try again or request a new code.', 'bad');
+        return;
+      }
+
+      if (!challenge.instructorUsername) {
+        // Keep account-existence information private while still allowing a clean demo flow.
+        App.showNotice('resetNotice', 'No instructor account is linked to that recovery number.', 'bad');
+        return;
+      }
+
+      const instructors = await App.getInstructors();
+      const instructor = instructors.find(i => i.username === challenge.instructorUsername && i.phone === phone);
+      if (!instructor || !instructor.active) {
+        App.showNotice('resetNotice', 'That instructor account is unavailable for recovery.', 'bad');
+        return;
+      }
+
+      instructor.passwordHash = await App.hashSecret(newPassword);
+      instructor.passwordChangedAt = new Date().toISOString();
+      await App.saveInstructors(instructors);
+      await Database.putMeta('reset_challenge', null);
+
+      App.resetFailures = 0;
+      App.showNotice('resetNotice', 'Password updated. Redirecting to login...', 'ok');
+
+      setTimeout(() => {
+        App.showForgotPassword(false);
+        document.getElementById('resetStep1').classList.remove('hidden');
+        document.getElementById('resetStep2').classList.add('hidden');
+        document.getElementById('resetNotice').replaceChildren();
+        document.getElementById('resetPhone').value = '';
+        document.getElementById('smsCodeInput').value = '';
+        document.getElementById('newPasswordInput').value = '';
+        sessionStorage.removeItem('resetPhone');
+        sessionStorage.removeItem('resetChallengeId');
+      }, 1200);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone,
+          code,
+          newPassword,
+          challengeId: sessionStorage.getItem('resetChallengeId') || ''
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Reset failed.');
+
+      App.resetFailures = 0;
+      App.showNotice('resetNotice', 'Password updated. Redirecting to login...', 'ok');
+
+      setTimeout(() => {
+        App.showForgotPassword(false);
+        document.getElementById('resetStep1').classList.remove('hidden');
+        document.getElementById('resetStep2').classList.add('hidden');
+        document.getElementById('resetNotice').replaceChildren();
+        sessionStorage.removeItem('resetPhone');
+        sessionStorage.removeItem('resetChallengeId');
+      }, 1200);
+    } catch (err) {
+      App.resetFailures += 1;
+      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
+      App.showNotice('resetNotice', err.message || 'Invalid recovery code. Please request a new code.', 'bad');
+    }
+  }
+
+  static logoutInstructor() {
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('authRole');
+    sessionStorage.removeItem('authUsername');
+    App.currentUser = null;
+    App.currentUser = null;
+    document.getElementById('instructorDesk').classList.add('hidden');
+    document.getElementById('instructorAuth').classList.remove('hidden');
+    document.getElementById('pinInput').value = '';
+  }
+
+  static async refreshDashboard() {
+    const token = sessionStorage.getItem('authToken');
+    let records = [];
+
+    if (token && token.startsWith(LOCAL_TOKEN_PREFIX)) {
+      App.setBackendStatus('Local browser storage');
+      records = await Database.getAllRecords();
+    } else if (token && CONFIG.REMOTE_API_ENABLED) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance/today`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const remoteRecords = await response.json();
+            records = Array.isArray(remoteRecords) ? remoteRecords.map(r => ({
+              id: String(r.id || ''),
+              recordType: 'attendance',
+              studentId: String(r.student_id || '').slice(0, 32),
+              name: String(r.student_name || 'Unknown student').slice(0, 80),
+              subject: String(r.subject || 'Unassigned').slice(0, 80),
+              scheduleId: String(r.schedule_id || '').slice(0, 40),
+              scheduleLabel: String(r.schedule_label || '').slice(0, 80),
+              reason: String(r.reason || 'Not specified').slice(0, 80),
+              reporterRole: String(r.reporter_role || 'Student').slice(0, 50),
+              teacherStatus: String(r.teacher_status || 'Teacher present').slice(0, 50),
+              dateKey: String(r.date_key || ''),
+              timestamp: String(r.timestamp || ''),
+              status: ['present', 'late', 'absent'].includes(r.status) ? r.status : 'present',
+              flags: Array.isArray(r.flags) ? r.flags.slice(0, 10).map(flag => String(flag).slice(0, 40)) : []
+            })) : [];
+        }
+      } catch (e) {
+        console.warn("Unable to fetch remote records.", e);
+        App.setBackendStatus('Backend unavailable');
+        records = await Database.getAllRecords();
+      }
+    } else if (LOCAL_FALLBACK_ALLOWED) {
+      App.setBackendStatus('Local fallback');
+      records = await Database.getAllRecords();
+    } else {
+      App.setBackendStatus('Authentication required');
+    }
+
+    const today = App.getTodayKey();
+    const todayAllRecords = records.filter(r => r.dateKey === today || String(r.dateKey).startsWith(today));
+    const todayRecords = todayAllRecords.filter(r => r.recordType !== 'classroom_report');
+    const todayReports = todayAllRecords.filter(r => r.recordType === 'classroom_report');
+    const subjectSummary = {};
+    const reasonSummary = {};
+    let teacherAbsentCount = 0;
+    let thirdPartyReports = 0;
+
+    todayRecords.forEach(record => {
+      const subject = String(record.subject || 'Unassigned');
+      const reason = String(record.reason || 'Not specified');
+      if (!subjectSummary[subject]) subjectSummary[subject] = { present: 0, late: 0, absent: 0 };
+      if (record.status === 'present') subjectSummary[subject].present += 1;
+      if (record.status === 'late') subjectSummary[subject].late += 1;
+      if (record.status === 'absent') subjectSummary[subject].absent += 1;
+
+      if (!reasonSummary[reason]) reasonSummary[reason] = 0;
+      reasonSummary[reason] += 1;
+
+      if (String(record.teacherStatus || '').toLowerCase().includes('absent') || reason.toLowerCase().includes('teacher absent')) teacherAbsentCount += 1;
+      if (String(record.reporterRole || '').toLowerCase().includes('third-party') || String(record.reporterRole || '').toLowerCase().includes('teacher/substitute')) thirdPartyReports += 1;
+    });
+    teacherAbsentCount += todayReports.filter(report => String(report.teacherStatus || '').toLowerCase().includes('absent')).length;
+    thirdPartyReports += todayReports.filter(report => String(report.reporterRole || '').toLowerCase().includes('third-party')).length;
+
+    const strongestSubject = Object.entries(subjectSummary).sort((a, b) => {
+      const aScore = (a[1].present * 3) + (a[1].late * 1) - (a[1].absent * 4);
+      const bScore = (b[1].present * 3) + (b[1].late * 1) - (b[1].absent * 4);
+      return bScore - aScore;
+    })[0];
+    const weakestSubject = Object.entries(subjectSummary).sort((a, b) => {
+      const aScore = (a[1].present * 3) + (a[1].late * 1) - (a[1].absent * 4);
+      const bScore = (b[1].present * 3) + (b[1].late * 1) - (b[1].absent * 4);
+      return aScore - bScore;
+    })[0];
+    const topReason = Object.entries(reasonSummary).sort((a, b) => b[1] - a[1])[0];
+
+    const strengthElement = document.getElementById('strengthSummary');
+    const weaknessElement = document.getElementById('weaknessSummary');
+    const mainReasonElement = document.getElementById('mainReason');
+
+    if (strengthElement) strengthElement.textContent = strongestSubject ? `${strongestSubject[0]} is strongest` : 'No subject data yet';
+    if (weaknessElement) weaknessElement.textContent = weakestSubject ? `${weakestSubject[0]} needs improvement` : 'No weak subject identified';
+    if (mainReasonElement) mainReasonElement.textContent = topReason ? `${topReason[0]} (${topReason[1]} record${topReason[1] > 1 ? 's' : ''})` : '--';
+
+    const subjectChart = document.getElementById('subjectChart');
+    if (subjectChart) {
+      subjectChart.replaceChildren();
+      const subjectEntries = Object.entries(subjectSummary).sort((a, b) => (b[1].present + b[1].late) - (a[1].present + a[1].late));
+      if (!subjectEntries.length) {
+        const empty = document.createElement('div');
+        empty.className = 'label';
+        empty.textContent = 'No subject records yet.';
+        subjectChart.appendChild(empty);
+      } else {
+        subjectEntries.forEach(([subject, summary]) => {
+          const row = document.createElement('div');
+          row.className = 'bar-row';
+          const label = document.createElement('span');
+          label.textContent = subject;
+          const track = document.createElement('div');
+          track.className = 'bar-track';
+          const fill = document.createElement('div');
+          const attendanceTotal = summary.present + summary.late + summary.absent;
+          const rate = Math.round(((summary.present + summary.late) / Math.max(attendanceTotal, 1)) * 100);
+          fill.className = `bar-fill${rate < 50 ? ' bad' : rate < 80 ? ' warn' : ''}`;
+          fill.style.width = `${rate}%`;
+          track.appendChild(fill);
+          const value = document.createElement('strong');
+          value.textContent = `${rate}%`;
+          row.append(label, track, value);
+          subjectChart.appendChild(row);
+        });
+      }
+    }
+
+    const studentSummary = document.getElementById('studentSummary');
+    if (studentSummary) {
+      studentSummary.replaceChildren();
+      const students = {};
+      todayRecords.forEach(record => {
+        const key = `${record.studentId}|${record.name}`;
+        if (!students[key]) students[key] = { name: record.name, id: record.studentId, present: 0, late: 0, absent: 0, reasons: [] };
+        students[key][record.status] += 1;
+        if (record.status === 'absent' && record.reason) students[key].reasons.push(record.reason);
+      });
+      const studentEntries = Object.values(students).sort((a, b) => (b.absent * 4 + b.late) - (a.absent * 4 + a.late)).slice(0, 8);
+      if (!studentEntries.length) {
+        const empty = document.createElement('div');
+        empty.className = 'label';
+        empty.textContent = 'No student records yet.';
+        studentSummary.appendChild(empty);
+      } else {
+        const table = document.createElement('table');
+        table.className = 'summary-table';
+        table.innerHTML = '<thead><tr><th>Student</th><th>P</th><th>L</th><th>A</th><th>Note</th></tr></thead>';
+        const body = document.createElement('tbody');
+        studentEntries.forEach(student => {
+          const row = document.createElement('tr');
+          const note = student.reasons[0] || (student.late ? 'Late arrival' : 'Stable');
+          [student.name, student.present, student.late, student.absent, note].forEach(value => {
+            const cell = document.createElement('td');
+            cell.textContent = String(value);
+            row.appendChild(cell);
+          });
+          body.appendChild(row);
+        });
+        table.appendChild(body);
+        studentSummary.appendChild(table);
+      }
+    }
+
+    document.getElementById('statTotal').textContent = todayRecords.length;
+    document.getElementById('statPresent').textContent = todayRecords.filter(r => r.status === 'present').length;
+    document.getElementById('statLate').textContent = todayRecords.filter(r => r.status === 'late').length;
+    document.getElementById('statFlags').textContent = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
+
+    const totalCount = todayRecords.length || 1;
+    const presentCount = todayRecords.filter(r => r.status === 'present').length;
+    const lateCount = todayRecords.filter(r => r.status === 'late').length;
+    const absentCount = todayRecords.filter(r => r.status === 'absent').length;
+    const flaggedCount = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
+    const presenceRate = Math.round((presentCount / totalCount) * 100);
+    const riskIndex = Math.min(100, Math.round(((lateCount * 25) + (absentCount * 22) + (flaggedCount * 15) + (teacherAbsentCount * 18) + (thirdPartyReports * 10)) / Math.max(totalCount, 1) * 100));
+    const verificationScore = Math.max(60, 100 - riskIndex);
+
+    const presenceMeter = document.getElementById('presenceMeter');
+    const riskMeter = document.getElementById('riskMeter');
+    const verificationMeter = document.getElementById('verificationMeter');
+    const presenceRateEl = document.getElementById('presenceRate');
+    const riskIndexEl = document.getElementById('riskIndex');
+    const verificationScoreEl = document.getElementById('verificationScore');
+
+    if (presenceMeter) presenceMeter.style.width = `${presenceRate}%`;
+    if (riskMeter) riskMeter.style.width = `${riskIndex}%`;
+    if (verificationMeter) verificationMeter.style.width = `${verificationScore}%`;
+    if (presenceRateEl) presenceRateEl.textContent = `${presenceRate}%`;
+    if (riskIndexEl) riskIndexEl.textContent = `${riskIndex}%`;
+    if (verificationScoreEl) verificationScoreEl.textContent = `${verificationScore}%`;
+
+    const insightValue = document.getElementById('aiInsightValue');
+    const insightText = document.getElementById('aiInsightText');
+    if (insightValue && insightText) {
+      insightValue.textContent = riskIndex < 35 ? 'Stable' : riskIndex < 60 ? 'Watch' : 'Critical';
+      const recommendation = strongestSubject && weakestSubject
+        ? `Focus on ${weakestSubject[0]} because it is the weakest subject, while ${strongestSubject[0]} remains the strongest.`
+        : 'Attendance flow is stable.';
+      insightText.textContent = riskIndex < 35 ? `Strong performance: ${strongestSubject ? strongestSubject[0] : 'the class'} is leading the day.` : riskIndex < 60 ? recommendation : `Multiple exceptions are rising. ${recommendation}`;
+    }
+
+    const board = document.getElementById('attendanceBoard');
+    const coverageBoard = document.getElementById('coverageBoard');
+    board.replaceChildren();
+
+    if (todayRecords.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'label';
+      empty.textContent = 'No records logged for today.';
+      board.appendChild(empty);
+      if (!coverageBoard) return;
+    }
+
+    todayRecords.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'item';
+      const details = document.createElement('div');
+      const identity = document.createElement('strong');
+      identity.textContent = `${String(r.name).slice(0, 80)} (${String(r.studentId).slice(0, 32)})`;
+      const time = document.createElement('div');
+      time.className = 'label';
+      const recordedTime = Number.isNaN(new Date(r.timestamp).getTime()) ? 'Unknown time' : new Date(r.timestamp).toLocaleTimeString();
+      time.textContent = `${r.scheduleLabel || r.subject || 'Unscheduled'} • ${recordedTime}`;
+      details.append(identity, time);
+      const badge = document.createElement('span');
+      badge.className = `badge ${r.status === 'late' ? 'late' : 'present'}`;
+      badge.textContent = r.status === 'late' ? 'late' : 'present';
+      item.append(details, badge);
+      board.appendChild(item);
+    });
+
+    if (coverageBoard) {
+      coverageBoard.replaceChildren();
+      if (!todayReports.length) {
+        const emptyReport = document.createElement('div');
+        emptyReport.className = 'label';
+        emptyReport.textContent = 'No classroom coverage reports for today.';
+        coverageBoard.appendChild(emptyReport);
+      } else {
+        todayReports.slice().reverse().forEach(report => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          const details = document.createElement('div');
+          const title = document.createElement('strong');
+          title.textContent = `${report.subject || 'Unassigned'} • ${report.teacherStatus || 'Coverage reported'}`;
+          const note = document.createElement('div');
+          note.className = 'label';
+          note.textContent = `${report.reason || 'No reason'} • ${report.reporterRole || 'Unknown reporter'}${report.name && report.name !== 'Classroom coverage report' ? ` • ${report.name}` : ''}`;
+          details.append(title, note);
+          const badge = document.createElement('span');
+          badge.className = `badge ${String(report.teacherStatus).toLowerCase().includes('absent') ? 'flagged' : 'late'}`;
+          badge.textContent = 'coverage';
+          item.append(details, badge);
+          coverageBoard.appendChild(item);
+        });
+      }
+    }
+  }
+
+  static async logClassroomReport() {
+    const subject = document.getElementById('coverageSubject').value;
+    const teacherStatus = document.getElementById('coverageStatus').value;
+    const reason = document.getElementById('coverageReason').value;
+    const reporterRole = document.getElementById('coverageReporter').value;
+    const note = document.getElementById('coverageNote').value.trim();
+
+    try {
+      await Database.putRecord({
+        id: window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${await App.randomDigits(6)}`,
+        recordType: 'classroom_report',
+        studentId: 'CLASSROOM',
+        name: note || 'Classroom coverage report',
+        subject,
+        reason,
+        reporterRole,
+        teacherStatus,
+        dateKey: App.getTodayKey(),
+        timestamp: new Date().toISOString(),
+        status: 'report',
+        flags: [teacherStatus === 'Teacher absent' ? 'TEACHER_ABSENT' : 'COVERAGE_REPORTED']
+      });
+      App.showNotice('coverageNotice', 'Classroom coverage report saved and excluded from student attendance totals.', 'ok');
+      document.getElementById('coverageNote').value = '';
+      await App.refreshDashboard();
+    } catch (error) {
+      App.showNotice('coverageNotice', 'Coverage report could not be saved locally. Try again.', 'bad');
+    }
+  }
+
+  static async exportDataset(format) {
+    const records = await Database.getAllRecords();
+    if (format === 'json') {
+      const exportable = records.map(r => ({ ...r, photo: undefined }));
+      const blob = new Blob([JSON.stringify(exportable, null, 2)], { type: 'application/json' });
+      App.triggerDownload(blob, `attendance_${App.getTodayKey()}.json`);
+    } else if (format === 'csv') {
+      const headers = ['ID', 'Type', 'Student ID', 'Name', 'Subject', 'Schedule', 'Reason', 'Reporter', 'Teacher Status', 'Date', 'Timestamp', 'Status'];
+          const escapeCsv = value => {
+            const text = String(value ?? '');
+            const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+            return `"${safeText.replace(/"/g, '""')}"`;
+          };
+          const rows = records.map(r => [r.id, r.recordType || 'attendance', r.studentId, r.name, r.subject || '', r.scheduleLabel || '', r.reason || '', r.reporterRole || '', r.teacherStatus || '', r.dateKey, r.timestamp, r.status].map(escapeCsv));
+      const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      App.triggerDownload(blob, `attendance_${App.getTodayKey()}.csv`);
+    }
+  }
+
+  static triggerDownload(blob, filename) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  static async purgeDatabase() {
+    if (confirm("Are you sure you want to purge all stored local database records?")) {
+      await Database.clearAll();
+      await App.syncSession();
+      await App.refreshDashboard();
+      alert("Local DB cache purged.");
+    }
+  }
+}
+
+// Lifecycle Initialization Engine
+window.addEventListener('DOMContentLoaded', () => {
+  App.init();
+});
+</script>
+</body>
+</html>
