@@ -202,6 +202,19 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   .mini-stat strong { font-size: 1.05rem; overflow-wrap: anywhere; }
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+.qr-modal { position:fixed; inset:0; background:rgba(15,23,42,.58); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000; }
+.qr-modal.open { display:flex; }
+.qr-card { width:min(430px,100%); background:#fff; border:1px solid var(--line); border-radius:20px; padding:22px; box-shadow:0 25px 60px rgba(15,23,42,.22); text-align:center; }
+.qr-box { width:260px; min-height:260px; margin:18px auto; display:grid; place-items:center; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+.qr-box img,.qr-box canvas { max-width:100%; height:auto; }
+.qr-url { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:#f8fafc; font-size:.78rem; color:var(--muted); word-break:break-all; }
+.otp-help { margin:8px 0 14px; color:var(--muted); font-size:.82rem; line-height:1.5; }
+.security-list { display:grid; gap:7px; margin:12px 0 0; text-align:left; }
+.security-list div { font-size:.8rem; color:var(--muted); }
+.security-list div::before { content:'✓'; color:var(--ok); font-weight:800; margin-right:7px; }
+</style>
 </head>
 <body>
 
@@ -217,6 +230,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       </div>
       <div class="header-actions">
         <button class="btn ghost" onclick="Router.navigate('homeView')">Home</button>
+        <button class="btn ghost" onclick="App.openAccessQR()">Open on Phone</button>
         <button class="btn ghost" onclick="Router.navigate('instructorView')">Instructor Desk</button>
       </div>
     </header>
@@ -457,24 +471,26 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         
         <!-- Step 1: Send Code -->
         <div id="resetStep1">
+          <p class="otp-help">Enter the Philippine mobile number registered to the instructor account. In remote mode, the server sends a 6-digit one-time password by SMS. Never put an SMS-provider secret in this GitHub file.</p>
           <div class="field">
             <label for="resetPhone">Recovery Phone Number</label>
             <input type="tel" id="resetPhone" maxlength="24" autocomplete="tel" placeholder="+639123456789">
           </div>
-          <button class="btn primary" style="width:100%;" onclick="App.requestResetCode()">Generate Recovery Code</button>
+          <button class="btn primary" style="width:100%;" onclick="App.requestResetCode()">Send OTP Code</button>
         </div>
 
         <!-- Step 2: Verify Code & Reset -->
         <div id="resetStep2" class="hidden">
           <div class="field">
-            <label for="smsCodeInput">Recovery Code</label>
+            <label for="smsCodeInput">SMS OTP</label>
             <input type="text" id="smsCodeInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="6-digit code">
           </div>
           <div class="field">
             <label for="newPasswordInput">New Password</label>
             <input type="password" id="newPasswordInput" maxlength="128" autocomplete="new-password" placeholder="Enter new password">
           </div>
-          <button class="btn primary" style="width:100%;" onclick="App.submitPasswordReset()">Update Password</button>
+          <button class="btn primary" style="width:100%;" onclick="App.submitPasswordReset()">Verify OTP & Update Password</button>
+          <button class="btn ghost" style="width:100%; margin-top:8px;" onclick="App.requestResetCode()">Resend OTP</button>
         </div>
 
         <button class="link-btn" onclick="App.showForgotPassword(false)">Back to Login</button>
@@ -660,6 +676,25 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 
   </div>
 
+  <!-- QR ACCESS MODAL -->
+  <div id="qrModal" class="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+    <div class="qr-card">
+      <h2 id="qrModalTitle" style="margin:0 0 6px;">Open this website on your phone</h2>
+      <p class="otp-help">Scan this QR code with your phone camera. It contains the current website address only; no password or secret is embedded.</p>
+      <div id="accessQr" class="qr-box" aria-label="Website QR code"></div>
+      <div id="accessQrUrl" class="qr-url"></div>
+      <div class="security-list">
+        <div>QR contains only the public website URL</div>
+        <div>No login password is stored in the QR</div>
+        <div>Works with the deployed GitHub Pages address</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:18px;">
+        <button class="btn primary" style="flex:1;" onclick="App.copyAccessUrl()">Copy Link</button>
+        <button class="btn ghost" style="flex:1;" onclick="App.closeAccessQR()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer">
     <span>Smart Attendance Platform</span>
     <span>Built for efficient classroom operations</span>
@@ -679,8 +714,10 @@ const CONFIG = Object.freeze({
   metaStore: 'metadata',
   lateThresholdMins: 15,
   // GitHub Pages is static hosting: no /api server exists unless you explicitly add one.
+  // Set this to your deployed backend URL when real SMS OTP is enabled.
+  // Example: 'https://your-api.example.com'
   API_BASE_URL: '',
-  REMOTE_API_ENABLED: false
+  QR_SIZE: 240
 });
 
 // The HTML file is fully usable on GitHub Pages without a backend.
@@ -849,6 +886,8 @@ class App {
     App.updateConnectionState();
     if (!CONFIG.REMOTE_API_ENABLED) App.setBackendStatus('GitHub local mode');
     window.addEventListener('online', App.updateConnectionState);
+    document.getElementById('qrModal')?.addEventListener('click', event => { if (event.target.id === 'qrModal') App.closeAccessQR(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') App.closeAccessQR(); });
     window.addEventListener('offline', App.updateConnectionState);
     setInterval(App.updateClockDisplay, 30000);
     
@@ -1538,6 +1577,10 @@ class App {
     App.showNotice('instructorManagementNotice', `Password reset for ${instructor.name}.`, 'ok');
   }
 
+  static isLocalDevelopmentHost() {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+  }
+
   static async authenticateInstructor() {
     const username = document.getElementById('instructorUsername').value.trim().toLowerCase();
     const password = document.getElementById('pinInput').value;
@@ -1558,12 +1601,12 @@ class App {
       let adminVerified = false;
       if (storedHash) adminVerified = await App.verifySecret(password, (() => { try { return JSON.parse(storedHash); } catch { return storedHash; } })());
       else if (legacyPin) adminVerified = password === legacyPin;
-      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin') {
-        // Local-only development bootstrap. Public deployments never reach this branch.
+      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && App.isLocalDevelopmentHost()) {
+        // Development bootstrap is deliberately restricted to localhost.
         adminVerified = password === '2468';
       }
 
-      // Built-in local administrator is strictly limited to localhost.
+      // Built-in local administrator bootstrap is strictly limited to localhost.
       if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && adminVerified) {
         if (!storedHash || typeof storedHash === 'string') {
           const upgraded = await App.hashSecret(password);
@@ -1646,6 +1689,46 @@ class App {
       App.showNotice('authNotice', LOCAL_FALLBACK_ALLOWED
         ? 'The system is currently unavailable. Please check your connection or use the local admin fallback.'
         : 'The instructor service is currently unavailable. Please check the connection and try again.', 'bad');
+    }
+  }
+
+  static getPublicAccessUrl() {
+    // Remove any temporary reset fragment before creating the public QR.
+    const url = new URL(window.location.href);
+    url.hash = '';
+    return url.toString();
+  }
+
+  static openAccessQR() {
+    const modal = document.getElementById('qrModal');
+    const box = document.getElementById('accessQr');
+    const urlEl = document.getElementById('accessQrUrl');
+    if (!modal || !box || !urlEl) return;
+    const url = App.getPublicAccessUrl();
+    box.replaceChildren();
+    urlEl.textContent = url;
+    if (window.QRCode) {
+      new QRCode(box, { text: url, width: CONFIG.QR_SIZE, height: CONFIG.QR_SIZE, correctLevel: QRCode.CorrectLevel.M });
+    } else {
+      const msg = document.createElement('div');
+      msg.className = 'notice warn';
+      msg.textContent = 'QR library is still loading. Please try again in a moment.';
+      box.appendChild(msg);
+    }
+    modal.classList.add('open');
+  }
+
+  static closeAccessQR() {
+    document.getElementById('qrModal')?.classList.remove('open');
+  }
+
+  static async copyAccessUrl() {
+    const url = App.getPublicAccessUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      App.showNotice('homeNotice', 'Website link copied. You can paste it on your phone.', 'ok');
+    } catch {
+      window.prompt('Copy this website address:', url);
     }
   }
 
