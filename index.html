@@ -58,6 +58,17 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .btn:active:not(:disabled) { transform: scale(0.98); }
 .primary { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; }
 .primary:hover { background: linear-gradient(135deg, var(--primary2), var(--primary)); }
+.btn { position:relative; overflow:hidden; }
+.btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 8px 18px rgba(15,23,42,.08); }
+.card, .hero-card, .showcase-item, .ai-card, .feature-item { transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.card:hover, .showcase-item:hover, .ai-card:hover { transform:translateY(-2px); box-shadow:0 12px 28px rgba(15,23,42,.06); }
+.subject-tools { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; margin-top:14px; }
+.subject-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.subject-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid rgba(109,40,217,.15); border-radius:999px; background:#faf5ff; color:#5b21b6; font-size:.78rem; font-weight:700; }
+.subject-chip::before { content:'●'; font-size:.55rem; }
+.helper-text { color:var(--muted); font-size:.78rem; line-height:1.5; margin:6px 0 0; }
+@media(max-width:520px){ .subject-tools{grid-template-columns:1fr;} .subject-tools .btn{width:100%;} }
+
 .ghost { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); }
 .danger { background: #fee2e2; color: #991b1b; }
 .warning { background: #fef3c7; color: #92400e; }
@@ -574,7 +585,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             </div>
             <div class="field">
               <label for="scheduleSubject">Subject</label>
-              <select id="scheduleSubject"><option>Mathematics</option><option>Science</option><option>English</option><option>Computer Studies</option><option>History</option><option>Filipino</option><option>Physical Education</option><option>Arts</option><option>Other</option></select>
+              <input id="scheduleSubject" type="text" list="subjectCatalog" maxlength="80" autocomplete="off" placeholder="e.g. Database Management" required>
+              <datalist id="subjectCatalog"></datalist>
+              <p class="helper-text">Type a new subject directly, or choose one already in your subject catalog.</p>
             </div>
             <div class="field">
               <label for="scheduleStart">Start time</label>
@@ -594,6 +607,19 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             </div>
             <button class="btn primary" onclick="App.saveScheduleSlot()">Save period</button>
             <button class="btn ghost" onclick="App.resetScheduleEditor()">Clear editor</button>
+          </div>
+          <div class="card" style="margin-top:16px; background:linear-gradient(180deg,#fff,#faf5ff);">
+            <h3 style="margin-bottom:4px;">Subject Catalog</h3>
+            <p class="label">Create reusable subjects once, then use them in schedules and attendance.</p>
+            <div id="subjectNotice"></div>
+            <div class="subject-tools">
+              <div class="field" style="margin:0;">
+                <label for="newSubjectName">New subject</label>
+                <input id="newSubjectName" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Database Management">
+              </div>
+              <button type="button" class="btn primary" onclick="App.addSubject()">Add Subject</button>
+            </div>
+            <div id="subjectList" class="subject-list"></div>
           </div>
           <div id="scheduleManager" class="schedule-list" style="margin-top:16px;"></div>
         </div>
@@ -725,6 +751,11 @@ const CONFIG = Object.freeze({
 const LOCAL_FALLBACK_ALLOWED = true;
 const LOCAL_TOKEN_PREFIX = 'local-';
 
+const DEFAULT_SUBJECTS = Object.freeze([
+  'Mathematics', 'Science', 'English', 'Computer Studies', 'History',
+  'Filipino', 'Physical Education', 'Arts'
+]);
+
 const CLASS_SCHEDULE = Object.freeze([
   { id: 'mon-math', day: 'Monday', start: '08:00', end: '09:00', subject: 'Mathematics', room: 'Room 201', teacher: 'Instructor' },
   { id: 'mon-science', day: 'Monday', start: '09:15', end: '10:15', subject: 'Science', room: 'Lab 1', teacher: 'Instructor' },
@@ -814,6 +845,7 @@ class App {
   static mediaStream = null;
   static capturedBlob = null;
   static schedule = [...CLASS_SCHEDULE];
+  static subjects = [...DEFAULT_SUBJECTS];
   static authFailures = 0;
   static authLockedUntil = 0;
   static resetFailures = 0;
@@ -880,6 +912,9 @@ class App {
     await App.ensureInstructorStore();
     await App.syncSession();
     await App.loadSchedule();
+    await App.loadSubjects();
+    App.renderSubjectControls();
+    App.renderSubjectCatalog();
     App.renderSchedule();
     App.renderScheduleManager();
     App.updateClockDisplay();
@@ -947,12 +982,109 @@ class App {
     }
   }
 
+  static normalizeSubject(value) {
+    return String(value || '').replace(/\\s+/g, ' ').trim().slice(0, 80);
+  }
+
+  static async loadSubjects() {
+    const saved = await Database.getMeta('subject_catalog');
+    const stored = saved && Array.isArray(saved.value) ? saved.value : [];
+    const fromSchedule = App.schedule.map(slot => slot.subject);
+    const merged = [...DEFAULT_SUBJECTS, ...stored, ...fromSchedule]
+      .map(App.normalizeSubject)
+      .filter(Boolean);
+    App.subjects = [...new Map(merged.map(subject => [subject.toLowerCase(), subject])).values()].sort((a, b) => a.localeCompare(b));
+    await Database.putMeta('subject_catalog', App.subjects);
+  }
+
+  static async addSubject() {
+    if (!App.currentUser || !['admin', 'instructor'].includes(App.currentUser.role)) {
+      App.showNotice('subjectNotice', 'Unlock the Instructor Desk to manage subjects.', 'bad');
+      return;
+    }
+    const input = document.getElementById('newSubjectName');
+    const subject = App.normalizeSubject(input?.value);
+    if (subject.length < 2) {
+      App.showNotice('subjectNotice', 'Enter a subject name with at least 2 characters.', 'bad');
+      input?.focus();
+      return;
+    }
+    if (App.subjects.some(item => item.toLowerCase() === subject.toLowerCase())) {
+      App.showNotice('subjectNotice', 'That subject is already in the catalog.', 'warn');
+      return;
+    }
+    App.subjects = [...App.subjects, subject].sort((a, b) => a.localeCompare(b));
+    await Database.putMeta('subject_catalog', App.subjects);
+    App.renderSubjectControls();
+    App.renderSubjectCatalog();
+    if (input) input.value = '';
+    const scheduleInput = document.getElementById('scheduleSubject');
+    if (scheduleInput) scheduleInput.value = subject;
+    App.showNotice('subjectNotice', `${subject} is ready to use in your schedule.`, 'ok');
+  }
+
+  static renderSubjectControls() {
+    const datalist = document.getElementById('subjectCatalog');
+    if (datalist) {
+      datalist.replaceChildren();
+      App.subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        datalist.appendChild(option);
+      });
+    }
+
+    const subjectSelect = document.getElementById('subjectSelect');
+    if (subjectSelect) {
+      const selected = subjectSelect.value;
+      subjectSelect.replaceChildren();
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select a subject';
+      subjectSelect.appendChild(placeholder);
+      App.subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        subjectSelect.appendChild(option);
+      });
+      if (App.subjects.includes(selected)) subjectSelect.value = selected;
+    }
+
+    ['coverageSubject'].forEach(id => {
+      const select = document.getElementById(id);
+      if (!select) return;
+      const selected = select.value;
+      select.replaceChildren();
+      App.subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        select.appendChild(option);
+      });
+      if (App.subjects.includes(selected)) select.value = selected;
+    });
+  }
+
+  static renderSubjectCatalog() {
+    const list = document.getElementById('subjectList');
+    if (!list) return;
+    list.replaceChildren();
+    App.subjects.forEach(subject => {
+      const chip = document.createElement('span');
+      chip.className = 'subject-chip';
+      chip.textContent = subject;
+      list.appendChild(chip);
+    });
+  }
+
   static getScheduleSlot(id) {
     return App.schedule.find(slot => slot.id === id);
   }
 
   static renderSchedule() {
     const now = new Date();
+    App.renderSubjectControls();
     const today = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const scheduleBoard = document.getElementById('scheduleBoard');
@@ -1060,7 +1192,7 @@ class App {
   static resetScheduleEditor() {
     document.getElementById('scheduleEditId').value = '';
     document.getElementById('scheduleDay').value = 'Monday';
-    document.getElementById('scheduleSubject').value = 'Mathematics';
+    document.getElementById('scheduleSubject').value = App.subjects[0] || 'Mathematics';
     document.getElementById('scheduleStart').value = '';
     document.getElementById('scheduleEnd').value = '';
     document.getElementById('scheduleRoom').value = '';
@@ -1085,12 +1217,17 @@ class App {
   static async saveScheduleSlot() {
     const editId = document.getElementById('scheduleEditId').value;
     const day = document.getElementById('scheduleDay').value;
-    const subject = document.getElementById('scheduleSubject').value;
+    const subject = App.normalizeSubject(document.getElementById('scheduleSubject').value);
     const start = document.getElementById('scheduleStart').value;
     const end = document.getElementById('scheduleEnd').value;
     const room = document.getElementById('scheduleRoom').value.trim();
     const teacher = document.getElementById('scheduleTeacher').value.trim();
 
+    if (subject.length < 2 || subject.length > 80) {
+      App.showNotice('scheduleNotice', 'Enter a valid subject name (2–80 characters).', 'bad');
+      document.getElementById('scheduleSubject')?.focus();
+      return;
+    }
     if (!start || !end || !room || !teacher || start >= end) {
       App.showNotice('scheduleNotice', 'Enter complete period details and make sure the end time is after the start time.', 'bad');
       return;
@@ -1112,7 +1249,13 @@ class App {
     const updatedSlot = { id: editId || `schedule-${Date.now()}-${await App.randomDigits(4)}`, day, start, end, subject, room, teacher };
     App.schedule = editId ? App.schedule.map(slot => slot.id === editId ? updatedSlot : slot) : [...App.schedule, updatedSlot];
     await Database.putMeta('class_schedule', App.schedule);
+    if (!App.subjects.some(item => item.toLowerCase() === subject.toLowerCase())) {
+      App.subjects = [...App.subjects, subject].sort((a, b) => a.localeCompare(b));
+      await Database.putMeta('subject_catalog', App.subjects);
+    }
     await App.syncScheduleToServer();
+    App.renderSubjectControls();
+    App.renderSubjectCatalog();
     App.renderSchedule();
     App.renderScheduleManager();
     App.resetScheduleEditor();
