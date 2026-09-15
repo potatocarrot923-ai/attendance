@@ -149,6 +149,18 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .report-form { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .report-form .field { margin-bottom: 0; }
 .report-form .full { grid-column: 1 / -1; }
+/* Compact accordion sections — designed for phones and long instructor pages */
+.accordion-stack { display:grid; gap:12px; }
+.compact-section { border:1px solid var(--line); border-radius:14px; background:var(--panel); overflow:hidden; box-shadow:0 2px 8px rgba(15,23,42,.03); }
+.compact-section > summary { list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; font-weight:800; color:var(--ink); user-select:none; }
+.compact-section > summary::-webkit-details-marker { display:none; }
+.compact-section > summary::after { content:'›'; flex:0 0 auto; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:#f1f5f9; color:var(--primary); font-size:1.35rem; line-height:1; transform:rotate(0deg); transition:transform .18s ease, background .18s ease; }
+.compact-section[open] > summary::after { transform:rotate(90deg); background:#ede9fe; }
+.compact-section > summary:hover { background:#fafafa; }
+.compact-section-body { padding:0 16px 16px; }
+.section-subtitle { display:block; margin-top:3px; color:var(--muted); font-size:.76rem; font-weight:500; }
+.compact-section .card { border:0; box-shadow:none; padding:0; }
+@media(max-width:520px) { .compact-section > summary { padding:13px 12px; } .compact-section-body { padding:0 12px 12px; } .accordion-stack { gap:8px; } }
 @media(max-width: 768px) { .analytics-grid, .report-form { grid-template-columns: 1fr; } .report-form .full { grid-column: auto; } }
 
 @media(max-width: 768px) {
@@ -307,7 +319,11 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         <div id="studentNotice"></div>
         
         <form id="checkinForm" onsubmit="App.handleCheckIn(event)">
-          <div class="field">
+          <div class="accordion-stack">
+            <details class="compact-section" open>
+              <summary>Student Information<span class="section-subtitle">Name and student ID</span></summary>
+              <div class="compact-section-body">
+<div class="field">
             <label for="studentName">Full Name</label>
             <input type="text" id="studentName" required maxlength="80" autocomplete="name" placeholder="e.g. Juan Dela Cruz">
           </div>
@@ -315,7 +331,12 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             <label for="studentId">Student ID</label>
             <input type="text" id="studentId" required maxlength="32" autocomplete="off" placeholder="e.g. 2026-0001">
           </div>
-          <div class="field">
+                        </div>
+            </details>
+            <details class="compact-section" open>
+              <summary>Attendance Details<span class="section-subtitle">Subject, status, and reporting details</span></summary>
+              <div class="compact-section-body">
+<div class="field">
             <label for="subjectSelect">Subject</label>
             <select id="subjectSelect" required>
               <option value="">Select a subject</option>
@@ -338,7 +359,12 @@ button:disabled { opacity: .5; cursor: not-allowed; }
               <option value="absent">Absent</option>
             </select>
           </div>
-          <div class="field">
+                        </div>
+            </details>
+            <details class="compact-section">
+              <summary>Class Session<span class="section-subtitle">Session code and scheduled period</span></summary>
+              <div class="compact-section-body">
+<div class="field">
             <label for="absenceReason">Reason for absence</label>
             <select id="absenceReason">
               <option value="">Select a reason</option>
@@ -377,6 +403,11 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             </select>
           </div>
           
+              </div>
+            </details>
+            <details class="compact-section">
+              <summary>Optical Proof<span class="section-subtitle">Optional camera capture</span></summary>
+              <div class="compact-section-body">
           <div class="field">
             <label>Live Optical Proof Capture</label>
             <div class="camera-box">
@@ -390,6 +421,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             </div>
           </div>
 
+              </div>
+            </details>
+          </div>
           <div style="display:flex; gap:10px; margin-top:20px;">
             <button type="submit" class="btn primary" style="flex:1;">Submit Attendance</button>
             <button type="button" class="btn ghost" onclick="Router.navigate('homeView')">Cancel</button>
@@ -458,41 +492,10 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           </div>
         </div>
 
-        <div id="adminManagementPanel" class="card hidden" style="margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div>
-              <h3>Admin • Instructor Management</h3>
-              <p class="label">Create, activate, deactivate, and manage instructor accounts on this device.</p>
-            </div>
-            <span class="badge present">ADMIN ONLY</span>
-          </div>
-          <div id="instructorManagementNotice"></div>
-          <form id="addInstructorForm" class="report-form" style="margin-top:14px;">
-            <div class="field">
-              <label for="newInstructorName">Full name</label>
-              <input id="newInstructorName" type="text" maxlength="80" placeholder="e.g. Maria Santos" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorUsername">Username</label>
-              <input id="newInstructorUsername" type="text" maxlength="32" autocomplete="off" placeholder="e.g. msantos" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorPassword">Temporary password</label>
-              <input id="newInstructorPassword" type="password" maxlength="128" autocomplete="new-password" placeholder="At least 6 characters" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorPhone">Philippine mobile number</label>
-              <input id="newInstructorPhone" type="tel" maxlength="16" autocomplete="tel" placeholder="09171234567" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorSubjects">Subjects</label>
-              <input id="newInstructorSubjects" type="text" maxlength="200" placeholder="e.g. Mathematics, Science">
-            </div>
-            <button class="btn primary" type="submit">Add Instructor</button>
-          </form>
-          <div id="instructorList" class="list" style="margin-top:14px;"></div>
-        </div>
-
+        <div class="accordion-stack">
+          <details class="compact-section" open>
+            <summary>Attendance Overview<span class="section-subtitle">Live records, system status, and insights</span></summary>
+            <div class="compact-section-body">
         <div class="grid g2">
           <div class="card">
             <h3>Attendance Log</h3>
@@ -538,6 +541,11 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           </div>
         </div>
 
+            </div>
+          </details>
+          <details class="compact-section">
+            <summary>Class Schedule<span class="section-subtitle">Add, edit, or remove class periods</span></summary>
+            <div class="compact-section-body">
         <div class="card" style="margin-top:16px;">
           <h3>Manage class schedule</h3>
           <p class="label">Only the instructor desk can change periods. Changes are saved on this device and used by student check-in.</p>
@@ -574,6 +582,11 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           <div id="scheduleManager" class="schedule-list" style="margin-top:16px;"></div>
         </div>
 
+            </div>
+          </details>
+          <details class="compact-section">
+            <summary>Teacher & Classroom Coverage<span class="section-subtitle">Record teacher absence or substitute coverage</span></summary>
+            <div class="compact-section-body">
         <div class="card" style="margin-top:16px;">
           <h3>Teacher and classroom coverage report</h3>
           <p class="label" style="margin:6px 0 16px;">Use this when the teacher is absent or a substitute / third person is managing the class.</p>
@@ -605,7 +618,44 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           </div>
           <div id="coverageBoard" class="list" style="margin-top:16px;"></div>
         </div>
-      </div>
+      </div>            </div>
+          </details>
+        <div id="adminManagementPanel" class="card hidden" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div>
+              <h3>Admin • Instructor Management</h3>
+              <p class="label">Create, activate, deactivate, and manage instructor accounts on this device.</p>
+            </div>
+            <span class="badge present">ADMIN ONLY</span>
+          </div>
+          <div id="instructorManagementNotice"></div>
+          <form id="addInstructorForm" class="report-form" style="margin-top:14px;">
+            <div class="field">
+              <label for="newInstructorName">Full name</label>
+              <input id="newInstructorName" type="text" maxlength="80" placeholder="e.g. Maria Santos" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorUsername">Username</label>
+              <input id="newInstructorUsername" type="text" maxlength="32" autocomplete="off" placeholder="e.g. msantos" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorPassword">Temporary password</label>
+              <input id="newInstructorPassword" type="password" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorPhone">Philippine mobile number</label>
+              <input id="newInstructorPhone" type="tel" maxlength="16" autocomplete="tel" placeholder="09171234567" required>
+            </div>
+            <div class="field">
+              <label for="newInstructorSubjects">Subjects</label>
+              <input id="newInstructorSubjects" type="text" maxlength="200" placeholder="e.g. Mathematics, Science">
+            </div>
+            <button class="btn primary" type="submit">Add Instructor</button>
+          </form>
+          <div id="instructorList" class="list" style="margin-top:14px;"></div>
+        </div>
+
+        </div>
     </section>
 
   </div>
@@ -1251,21 +1301,28 @@ class App {
     };
 
     try {
-      if (CONFIG.REMOTE_API_ENABLED) try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...(sessionStorage.getItem('authToken') ? { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` } : {}) },
-          body: JSON.stringify(payload)
-        });
-        if (response.status === 409) {
-          App.showNotice('studentNotice', 'This student already has an attendance record for this subject today.', 'warn');
+      if (CONFIG.REMOTE_API_ENABLED) {
+        try {
+          const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(sessionStorage.getItem('authToken') ? { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` } : {}) },
+            body: JSON.stringify(payload)
+          });
+          if (response.status === 409) {
+            App.showNotice('studentNotice', 'This student already has an attendance record for this subject today.', 'warn');
+            return;
+          }
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.error || 'Remote attendance request failed.');
+          }
+          App.setBackendStatus('Cloud synced');
+        } catch (remoteError) {
+          console.error('Cloud attendance save failed:', remoteError);
+          App.setBackendStatus('Cloud unavailable');
+          App.showNotice('studentNotice', `Attendance was NOT recorded because the shared server is unavailable. ${remoteError.message || 'Please try again.'}`, 'bad');
           return;
         }
-        if (!response.ok) throw new Error('Remote attendance request failed');
-        App.setBackendStatus('Cloud synced');
-      } catch (remoteError) {
-        console.warn('Remote API unavailable; saving attendance locally.', remoteError);
-        App.setBackendStatus('Local fallback');
       }
 
       await Database.putRecord({
@@ -1470,7 +1527,7 @@ class App {
 
     const newPassword = prompt(`Set a new password for ${instructor.name}:`);
     if (newPassword === null) return;
-    if (newPassword.length < 6 || newPassword.length > 128) {
+    if (newPassword.length < 10 || newPassword.length > 128 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
       App.showNotice('instructorManagementNotice', 'Password must be 10–128 characters and include uppercase, lowercase, and a number.', 'bad');
       return;
     }
