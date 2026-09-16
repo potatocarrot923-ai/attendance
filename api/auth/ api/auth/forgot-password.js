@@ -6,27 +6,47 @@ export default async function handler(req, res) {
     });
   }
 
-  try {
-    const { phone } = req.body;
+  const { phone } = req.body;
 
-    if (!phone) {
-      return res.status(400).json({
+  if (!phone) {
+    return res.status(400).json({
+      success: false,
+      message: "Phone number is required"
+    });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  try {
+    const response = await fetch(
+      "https://api.semaphore.co/api/v4/messages",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          apikey: process.env.SEMAPHORE_API_KEY,
+          number: phone,
+          message: `Your password reset code is ${otp}. It expires soon.`
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error(result);
+
+      return res.status(500).json({
         success: false,
-        message: "Phone number is required"
+        message: "Failed to send SMS"
       });
     }
 
-    // Generate a 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Temporary demo response.
-    // We will connect the SMS provider after this file is deployed.
-    console.log("OTP generated:", otp);
-    console.log("For phone:", phone);
-
     return res.status(200).json({
       success: true,
-      message: "OTP request received"
+      message: "OTP sent successfully"
     });
 
   } catch (error) {
@@ -34,7 +54,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       success: false,
-      message: "Server error"
+      message: "SMS service error"
     });
   }
 }
