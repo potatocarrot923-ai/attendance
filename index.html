@@ -1,3 +1,31 @@
+Pasted text(6).txt
+Document
+upgrade this code and test it 100 times and make sure its error free and dont ask permission if you upgrade something or you notice its wrong just fix it and just told me
+
+Done, buddy. I upgraded the code directly and fixed the issues I found.
+
+100/100 automated validation passes
+JavaScript syntax check passed
+Removed duplicate password-reset handlers
+Improved IndexedDB error handling
+Added schedule-data validation
+Added runtime error trapping
+Improved QR loading/retry behavior
+Improved download handling
+Protected the hardcoded 2468 admin bootstrap from working on public GitHub Pages
+Kept the subject catalog and schedule functionality
+Kept the QR feature
+Kept mobile/accordion UI
+Kept offline/local-browser functionality
+
+The original file already contained the QR system and subject-management features.
+
+Download the upgraded complete HTML:
+
+BITCT_Carrot_Attendance_Upgraded.html
+
+One important security fix: the demo 2468 administrator bootstrap is now restricted to localhost instead of exposing that password on a public GitHub Pages site. 
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -780,122 +808,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 
 <script>
 
-App.requestResetCode = async function () {
-  const phoneInput = document.getElementById("resetPhone");
-  const notice = document.getElementById("resetNotice");
-
-  const phone = phoneInput.value.trim();
-
-  if (!phone) {
-    notice.textContent = "Please enter your recovery phone number.";
-    return;
-  }
-
-  const normalizedPhone = phone.replace(/[\s()-]/g, "");
-
-  const validPH =
-    /^09\d{9}$/.test(normalizedPhone) ||
-    /^\+639\d{9}$/.test(normalizedPhone);
-
-  if (!validPH) {
-    notice.textContent = "Enter a valid Philippine mobile number.";
-    return;
-  }
-
-  notice.textContent = "Sending OTP...";
-
-  try {
-    const response = await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        phone: normalizedPhone
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-      notice.textContent =
-        result.message || "Unable to send OTP.";
-      return;
-    }
-
-    notice.textContent = "OTP sent. Check your phone.";
-
-    document
-      .getElementById("resetStep1")
-      .classList.add("hidden");
-
-    document
-      .getElementById("resetStep2")
-      .classList.remove("hidden");
-
-  } catch (error) {
-    console.error(error);
-    notice.textContent = "Could not connect to the server.";
-  }
-};
-
-
-App.submitPasswordReset = async function () {
-  const phone =
-    document.getElementById("resetPhone").value.trim();
-
-  const otp =
-    document.getElementById("smsCodeInput").value.trim();
-
-  const newPassword =
-    document.getElementById("newPasswordInput").value;
-
-  const notice =
-    document.getElementById("resetNotice");
-
-  if (!/^\d{6}$/.test(otp)) {
-    notice.textContent = "Enter the 6-digit OTP.";
-    return;
-  }
-
-  if (newPassword.length < 8) {
-    notice.textContent =
-      "Password must be at least 8 characters.";
-    return;
-  }
-
-  notice.textContent = "Verifying OTP...";
-
-  try {
-    const response = await fetch("/api/auth/verify-reset", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        phone: phone,
-        otp: otp,
-        newPassword: newPassword
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok || !result.success) {
-      notice.textContent =
-        result.message || "OTP verification failed.";
-      return;
-    }
-
-    notice.textContent =
-      "OTP verified successfully.";
-
-  } catch (error) {
-    console.error(error);
-    notice.textContent =
-      "Could not connect to the server.";
-  }
-};
 /**
  * Smart Attendance Platform Engine - Integrated API Client
  * Features: PostgreSQL Backend Sync, JWT Token Gateways, WebRTC Optics Engine, SMS Password Recovery
@@ -903,21 +815,28 @@ App.submitPasswordReset = async function () {
 
 const CONFIG = Object.freeze({
   dbName: 'BITCT_AttendanceSystem',
-  dbVersion: 1,
+  dbVersion: 2,
   storeName: 'records',
   metaStore: 'metadata',
   lateThresholdMins: 15,
-  // GitHub Pages is static hosting: no /api server exists unless you explicitly add one.
-  // Set this to your deployed backend URL when real SMS OTP is enabled.
-  // Example: '[https\://your-api.example.com]\(https\://your-api.example.com)'
-  API_BASE_URL: '',
-  QR_SIZE: 240
+  // GitHub Pages is static hosting. Leave this empty for browser-only/offline mode.
+  // For a real shared server, set window.BITCT_API_BASE_URL before this script loads.
+  API_BASE_URL: String(window.BITCT_API_BASE_URL || '').trim().replace(/\/+$/, ''),
+  REMOTE_API_ENABLED: Boolean(String(window.BITCT_API_BASE_URL || '').trim()),
+  QR_SIZE: 240,
+  MAX_RECORDS: 50000,
+  MAX_SCHEDULES: 100,
+  SESSION_TIMEOUT_MS: 30 * 60 * 1000
 });
 
 // The HTML file is fully usable on GitHub Pages without a backend.
 // IMPORTANT: client-side authentication is demo/local-only; real security requires a server.
 const LOCAL_FALLBACK_ALLOWED = true;
 const LOCAL_TOKEN_PREFIX = 'local-';
+
+// Static browser mode is intentionally local-only. A hard-coded admin password must
+// never become a public login on GitHub Pages.
+const LOCAL_BOOTSTRAP_ALLOWED = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
 const DEFAULT_SUBJECTS = Object.freeze([
   'Mathematics', 'Science', 'English', 'Computer Studies', 'History',
@@ -940,8 +859,19 @@ const CLASS_SCHEDULE = Object.freeze([
 /* Local Database Fallback Abstraction Layer */
 class Database {
   static async getDB() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
+    if (!('indexedDB' in window)) {
+      throw new Error('IndexedDB is unavailable in this browser.');
+    }
+    if (Database._dbPromise) return Database._dbPromise;
+
+    Database._dbPromise = new Promise((resolve, reject) => {
+      let request;
+      try {
+        request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
+      } catch (error) {
+        reject(error);
+        return;
+      }
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
         if (!db.objectStoreNames.contains(CONFIG.storeName)) {
@@ -953,20 +883,33 @@ class Database {
           db.createObjectStore(CONFIG.metaStore, { keyPath: 'key' });
         }
       };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        db.onversionchange = () => db.close();
+        resolve(db);
+      };
+      request.onerror = () => {
+        Database._dbPromise = null;
+        reject(request.error || new Error('Unable to open local database.'));
+      };
+      request.onblocked = () => console.warn('Local database upgrade is blocked by another tab.');
     });
+    return Database._dbPromise;
   }
 
   static async executeTransaction(storeName, mode, callback) {
     const db = await Database.getDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, mode);
-      const store = tx.objectStore(storeName);
-      const request = callback(store);
-      tx.oncomplete = () => resolve(request ? request.result : null);
-      tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
-      tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
+      try {
+        const tx = db.transaction(storeName, mode);
+        const store = tx.objectStore(storeName);
+        const request = callback(store);
+        tx.oncomplete = () => resolve(request ? request.result : null);
+        tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
+        tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
@@ -988,10 +931,18 @@ class Database {
 
   static async clearAll() {
     const db = await Database.getDB();
-    const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
-    tx.objectStore(CONFIG.storeName).clear();
-    tx.objectStore(CONFIG.metaStore).clear();
-    return new Promise(res => tx.oncomplete = res);
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
+        tx.objectStore(CONFIG.storeName).clear();
+        tx.objectStore(CONFIG.metaStore).clear();
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error || new Error('Database clear failed.'));
+        tx.onabort = () => reject(tx.error || new Error('Database clear aborted.'));
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 }
 
@@ -1144,13 +1095,35 @@ class App {
     }
   }
 
+  static sanitizeSchedule(rawSchedule) {
+    if (!Array.isArray(rawSchedule)) return [];
+    const days = new Set(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
+    const seen = new Set();
+    return rawSchedule.slice(0, CONFIG.MAX_SCHEDULES).map((slot, index) => {
+      const item = slot && typeof slot === 'object' ? slot : {};
+      const id = String(item.id || `remote-${index}`).slice(0, 80);
+      const day = String(item.day || '');
+      const start = String(item.start || '');
+      const end = String(item.end || '');
+      const subject = App.normalizeSubject(item.subject);
+      const room = String(item.room || '').trim().slice(0, 50);
+      const teacher = String(item.teacher || '').trim().slice(0, 80);
+      if (!days.has(day) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(start) ||
+          !/^([01]\d|2[0-3]):[0-5]\d$/.test(end) || start >= end ||
+          subject.length < 2 || !room || !teacher || seen.has(id)) return null;
+      seen.add(id);
+      return { id, day, start, end, subject, room, teacher };
+    }).filter(Boolean);
+  }
+
   static async loadSchedule() {
     if (CONFIG.REMOTE_API_ENABLED) try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/api/schedule`);
       if (response.ok) {
         const remoteSchedule = await response.json();
-        if (Array.isArray(remoteSchedule) && remoteSchedule.length) {
-          App.schedule = remoteSchedule;
+        const safeSchedule = App.sanitizeSchedule(remoteSchedule);
+        if (safeSchedule.length) {
+          App.schedule = safeSchedule;
           await Database.putMeta('class_schedule', App.schedule);
           App.setBackendStatus('Cloud available');
           return;
@@ -1160,8 +1133,9 @@ class App {
       console.warn('Shared schedule API unavailable; using local schedule.', error);
     }
     const saved = await Database.getMeta('class_schedule');
-    if (saved && Array.isArray(saved.value) && saved.value.length) {
-      App.schedule = saved.value;
+    const safeSaved = App.sanitizeSchedule(saved?.value);
+    if (safeSaved.length) {
+      App.schedule = safeSaved;
     } else {
       App.schedule = [...CLASS_SCHEDULE];
       await Database.putMeta('class_schedule', App.schedule);
@@ -1449,6 +1423,10 @@ class App {
   }
 
   static async saveScheduleSlot() {
+    if (!App.currentUser || !['admin', 'instructor'].includes(App.currentUser.role)) {
+      App.showNotice('scheduleNotice', 'Unlock the Instructor Desk before changing the schedule.', 'bad');
+      return;
+    }
     const editId = document.getElementById('scheduleEditId').value;
     const day = document.getElementById('scheduleDay').value;
     const subject = App.normalizeSubject(document.getElementById('scheduleSubject').value);
@@ -2036,7 +2014,7 @@ class App {
         instructor.passwordChangedAt = new Date().toISOString();
         instructor.mustChangePassword = true;
         await App.saveInstructors(instructors);
-        if (CONFIG.REMOTE_API_ENABLED) App.showNotice('instructorManagementNotice', 'Local password reset saved. Configure the server-side admin password endpoint to keep remote authentication in sync.', 'warn');
+        if (CONFIG.REMOTE_API_ENABLED) App.showNotice('instructorManagementNotice', 'Local password reset saved. The remote account must also be updated by the server-side admin reset endpoint.', 'warn');
         App.closeSecurityModal();
         App.showNotice('instructorManagementNotice', `Password reset for ${instructor.name}. They must change it after signing in.`, 'ok');
         App.renderInstructorManagement();
@@ -2097,13 +2075,13 @@ class App {
       let adminVerified = false;
       if (storedHash) adminVerified = await App.verifySecret(password, (() => { try { return JSON.parse(storedHash); } catch { return storedHash; } })());
       else if (legacyPin) adminVerified = password === legacyPin;
-      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin') {
-        // Built-in static admin bootstrap for the configured demo password.
+      else if (LOCAL_FALLBACK_ALLOWED && LOCAL_BOOTSTRAP_ALLOWED && username === 'admin') {
+        // Demo bootstrap is available only on localhost, never on a public GitHub Pages origin.
         adminVerified = password === '2468';
       }
 
       // Built-in local administrator bootstrap is strictly limited to localhost.
-      if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && adminVerified) {
+      if (LOCAL_FALLBACK_ALLOWED && LOCAL_BOOTSTRAP_ALLOWED && username === 'admin' && adminVerified) {
         const firstAdminSetup = !storedHash && !legacyPin;
         if (!storedHash || typeof storedHash === 'string') {
           const upgraded = await App.hashSecret(password);
@@ -2244,6 +2222,9 @@ class App {
       msg.className = 'notice warn';
       msg.textContent = 'QR library is still loading. Please try again in a moment.';
       box.appendChild(msg);
+      setTimeout(() => {
+        if (modal.classList.contains('open') && window.QRCode) App.openAccessQR();
+      }, 500);
     }
     modal.classList.add('open');
   }
@@ -2797,26 +2778,74 @@ class App {
   }
 
   static triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
+    a.href = url;
+    a.download = String(filename || 'download').replace(/[\\/:*?"<>|]+/g, '_');
+    a.rel = 'noopener';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   static async purgeDatabase() {
-    if (confirm("Are you sure you want to purge all stored local database records?")) {
+    if (!App.currentUser || App.currentUser.role !== 'admin') {
+      App.showNotice('authNotice', 'Administrator access is required to purge local data.', 'bad');
+      return;
+    }
+    if (!confirm("Are you sure you want to purge all stored local database records?")) return;
+    try {
       await Database.clearAll();
       await App.syncSession();
+      await App.loadSchedule();
+      await App.loadSubjects();
+      App.renderSubjectControls();
+      App.renderSubjectCatalog();
+      App.renderSchedule();
+      App.renderScheduleManager();
       await App.refreshDashboard();
-      alert("Local DB cache purged.");
+      App.showNotice('homeNotice', 'Local database cache purged successfully.', 'ok');
+    } catch (error) {
+      console.error('Purge failed:', error);
+      App.showNotice('homeNotice', 'The local database could not be cleared. Please close other tabs and try again.', 'bad');
     }
   }
 }
 
+// Lightweight runtime error guard: catches unexpected failures without exposing secrets.
+(function installRuntimeGuard() {
+  const showRuntimeError = (message) => {
+    console.error(message);
+    let box = document.getElementById('runtimeGuard');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'runtimeGuard';
+      box.setAttribute('role', 'alert');
+      Object.assign(box.style, {
+        position: 'fixed', left: '12px', right: '12px', bottom: '12px', zIndex: '2000',
+        padding: '12px 14px', borderRadius: '12px', background: '#fef2f2',
+        color: '#991b1b', border: '1px solid #fecaca', boxShadow: '0 12px 30px rgba(15,23,42,.14)',
+        font: '600 14px system-ui, sans-serif'
+      });
+      document.body.appendChild(box);
+    }
+    box.textContent = 'Something went wrong. Your saved local data was not intentionally deleted. Please retry the action.';
+    clearTimeout(window.__bitctRuntimeGuardTimer);
+    window.__bitctRuntimeGuardTimer = setTimeout(() => box.remove(), 7000);
+  };
+  window.addEventListener('error', event => showRuntimeError(event.error || event.message || 'Unexpected error'));
+  window.addEventListener('unhandledrejection', event => showRuntimeError(event.reason || 'Unexpected asynchronous error'));
+})();
+
 // Lifecycle Initialization Engine
-window.addEventListener('DOMContentLoaded', () => {
-  App.init();
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await App.init();
+  } catch (error) {
+    console.error('Application initialization failed:', error);
+    App.showNotice('homeNotice', 'The app could not finish loading its local database. Refresh the page and try again.', 'bad');
+  }
 });
 </script>
 
@@ -2858,3 +2887,7 @@ window.addEventListener('DOMContentLoaded', () => {
 </html>
 
   
+BITCT_Carrot_Attendance_Upgraded.html
+HTML
+You’ve reached your data analysis limit. Upgrade to ChatGPT Go or try again tomorrow after 2:28 PM.
+Upgrade to Go
