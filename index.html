@@ -1,4 +1,3 @@
- 
 <!doctype html>
 <html lang="en">
 <head>
@@ -142,7 +141,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .list { display: grid; gap: 8px; max-height: 400px; overflow-y: auto; }
 .item { border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
 
-.link-btn { background: none; border: none; color: var(--primary); font-size: 0.85rem; padding: 0; margin-top: 8px; text-decoration: underline; }
+.link-btn { background: none; border: none; color: var(--primary); font-size: 0.85rem; padding: 0; margin-top: 8px; text-decoration: underline; cursor: pointer; }
 
 .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0; }
 .mini-stat { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: #f8fafc; }
@@ -238,7 +237,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .password-meter{height:7px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin-top:8px}.password-meter>span{display:block;height:100%;width:0;transition:width .2s ease}
 .password-feedback{font-size:.76rem;color:var(--muted);margin-top:5px;min-height:18px}
 .security-note{font-size:.78rem;color:var(--muted);line-height:1.45}.modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
-.instructor-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}.instructor-toolbar input{min-width:220px;flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:9px}
+.instructor-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}.instructor-toolbar input{min-width:220px;flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:999px}
 @media(max-width:650px){.account-security-card{grid-template-columns:1fr}.security-actions{justify-content:stretch}.security-actions .btn{flex:1}.app-modal{padding:16px}.instructor-toolbar input{min-width:100%}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
@@ -376,104 +375,102 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             <details class="compact-section" open>
               <summary>Student Information<span class="section-subtitle">Name and student ID</span></summary>
               <div class="compact-section-body">
-<div class="field">
-            <label for="studentName">Full Name</label>
-            <input type="text" id="studentName" required maxlength="80" autocomplete="name" placeholder="e.g. Juan Dela Cruz">
-          </div>
-          <div class="field">
-            <label for="studentId">Student ID</label>
-            <input type="text" id="studentId" required maxlength="32" autocomplete="off" placeholder="e.g. 2026-0001">
-          </div>
-                        </div>
+                <div class="field">
+                  <label for="studentName">Full Name</label>
+                  <input type="text" id="studentName" required maxlength="80" autocomplete="name" placeholder="e.g. Juan Dela Cruz">
+                </div>
+                <div class="field">
+                  <label for="studentId">Student ID</label>
+                  <input type="text" id="studentId" required maxlength="32" autocomplete="off" placeholder="e.g. 2026-0001">
+                </div>
+              </div>
             </details>
             <details class="compact-section" open>
               <summary>Attendance Details<span class="section-subtitle">Subject, status, and reporting details</span></summary>
               <div class="compact-section-body">
-<div class="field">
-            <label for="subjectSelect">Subject</label>
-            <select id="subjectSelect" required>
-              <option value="">Select a subject</option>
-              <option>Mathematics</option>
-              <option>Science</option>
-              <option>English</option>
-              <option>Computer Studies</option>
-              <option>History</option>
-              <option>Filipino</option>
-              <option>Physical Education</option>
-              <option>Arts</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="attendanceType">Attendance Status</label>
-            <select id="attendanceType" required>
-              <option value="present">Present</option>
-              <option value="late">Late</option>
-              <option value="absent">Absent</option>
-            </select>
-          </div>
-                        </div>
+                <div class="field">
+                  <label for="subjectSelect">Subject</label>
+                  <select id="subjectSelect" required>
+                    <option value="">Select a subject</option>
+                    <option>Mathematics</option>
+                    <option>Science</option>
+                    <option>English</option>
+                    <option>Computer Studies</option>
+                    <option>History</option>
+                    <option>Filipino</option>
+                    <option>Physical Education</option>
+                    <option>Arts</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="attendanceType">Attendance Status</label>
+                  <select id="attendanceType" required>
+                    <option value="present">Present</option>
+                    <option value="late">Late</option>
+                    <option value="absent">Absent</option>
+                  </select>
+                </div>
+              </div>
             </details>
             <details class="compact-section">
               <summary>Class Session<span class="section-subtitle">Session code and scheduled period</span></summary>
               <div class="compact-section-body">
-<div class="field">
-            <label for="absenceReason">Reason for absence</label>
-            <select id="absenceReason">
-              <option value="">Select a reason</option>
-              <option>Sick</option>
-              <option>Family emergency</option>
-              <option>Teacher absent</option>
-              <option>School activity</option>
-              <option>Third-party report</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="reporterRole">Reported by</label>
-            <select id="reporterRole">
-              <option value="Student">Student</option>
-              <option value="Teacher/Substitute">Teacher/Substitute</option>
-              <option value="Third-party representative">Third-party representative</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="teacherStatus">Teacher / class coverage</label>
-            <select id="teacherStatus">
-              <option value="Teacher present">Teacher present</option>
-              <option value="Teacher absent">Teacher absent</option>
-              <option value="Substitute/third person present">Substitute/third person present</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="sessionCodeInput">Session Code</label>
-            <input type="text" id="sessionCodeInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required placeholder="6-digit PIN">
-          </div>
-          <div class="field">
-            <label for="scheduleSelect">Class period</label>
-            <select id="scheduleSelect" required>
-              <option value="">Select a scheduled period</option>
-            </select>
-          </div>
-
+                <div class="field">
+                  <label for="absenceReason">Reason for absence</label>
+                  <select id="absenceReason">
+                    <option value="">Select a reason</option>
+                    <option>Sick</option>
+                    <option>Family emergency</option>
+                    <option>Teacher absent</option>
+                    <option>School activity</option>
+                    <option>Third-party report</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="reporterRole">Reported by</label>
+                  <select id="reporterRole">
+                    <option value="Student">Student</option>
+                    <option value="Teacher/Substitute">Teacher/Substitute</option>
+                    <option value="Third-party representative">Third-party representative</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="teacherStatus">Teacher / class coverage</label>
+                  <select id="teacherStatus">
+                    <option value="Teacher present">Teacher present</option>
+                    <option value="Teacher absent">Teacher absent</option>
+                    <option value="Substitute/third person present">Substitute/third person present</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="sessionCodeInput">Session Code</label>
+                  <input type="text" id="sessionCodeInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required placeholder="6-digit PIN">
+                </div>
+                <div class="field">
+                  <label for="scheduleSelect">Class period</label>
+                  <select id="scheduleSelect" required>
+                    <option value="">Select a scheduled period</option>
+                  </select>
+                </div>
               </div>
             </details>
             <details class="compact-section">
               <summary>Optical Proof<span class="section-subtitle">Optional camera capture</span></summary>
               <div class="compact-section-body">
-          <div class="field">
-            <label>Live Optical Proof Capture</label>
-            <div class="camera-box">
-              <video id="webcam" autoplay playsinline muted></video>
-              <canvas id="photoCanvas" class="hidden"></canvas>
-            </div>
-            <div id="cameraNotice" class="notice warn hidden" style="margin-top:8px; margin-bottom:0;">Camera unavailable. You can continue without optical proof.</div>
-            <div style="display:flex; gap:8px; margin-top:8px;">
-              <button type="button" class="btn ghost" style="flex:1;" onclick="App.capturePhoto()">Capture Frame</button>
-              <button type="button" class="btn ghost" onclick="App.resetCamera()">Reset</button>
-            </div>
-          </div>
-
+                <div class="field">
+                  <label>Live Optical Proof Capture</label>
+                  <div class="camera-box">
+                    <video id="webcam" autoplay playsinline muted></video>
+                    <canvas id="photoCanvas" class="hidden"></canvas>
+                  </div>
+                  <div id="cameraNotice" class="notice warn hidden" style="margin-top:8px; margin-bottom:0;">Camera unavailable. You can continue without optical proof.</div>
+                  <div style="display:flex; gap:8px; margin-top:8px;">
+                    <button type="button" class="btn ghost" style="flex:1;" onclick="App.capturePhoto()">Capture Frame</button>
+                    <button type="button" class="btn ghost" onclick="App.resetCamera()">Reset</button>
+                  </div>
+                </div>
               </div>
             </details>
           </div>
@@ -500,7 +497,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           <input type="password" id="pinInput" maxlength="128" autocomplete="current-password" placeholder="Enter secure password">
         </div>
         <button class="btn primary" style="width:100%;" onclick="App.authenticateInstructor()">Unlock Dashboard</button>
-        <button class="link-btn" onclick="App.showForgotPassword(true)">Forgot password?</button>
+        <button type="button" class="link-btn" onclick="App.showForgotPassword(true)">Forgot password?</button>
       </div>
 
       <!-- 2. FORGOT PASSWORD / SMS RESET FORM -->
@@ -508,31 +505,101 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         <h2>Reset Instructor Password</h2>
         <div id="resetNotice"></div>
 
-        <!-- Step 1: Send Code -->
+        <!-- STEP 1: ENTER PHONE NUMBER -->
         <div id="resetStep1">
-          <p class="otp-help">Enter the Philippine mobile number registered to the instructor account. In remote mode, the server sends a 6-digit one-time password by SMS. Never put an SMS-provider secret in this GitHub file.</p>
+          <p class="otp-help">
+            Enter the Philippine mobile number registered
+            to your instructor account. A 6-digit OTP
+            will be sent to your phone.
+          </p>
           <div class="field">
-            <label for="resetPhone">Recovery Phone Number</label>
-            <input type="tel" id="resetPhone" maxlength="24" autocomplete="tel" placeholder="+639123456789">
+            <label for="resetPhone">
+              Recovery Phone Number
+            </label>
+            <input
+              type="tel"
+              id="resetPhone"
+              maxlength="13"
+              autocomplete="tel"
+              inputmode="tel"
+              placeholder="09123456789"
+            >
           </div>
-          <button class="btn primary" style="width:100%;" onclick="App.requestResetCode()">Send OTP Code</button>
+          <button
+            type="button"
+            class="btn primary"
+            style="width:100%;"
+            onclick="App.requestResetCode()"
+          >
+            Send OTP Code
+          </button>
         </div>
 
-        <!-- Step 2: Verify Code & Reset -->
+        <!-- STEP 2: VERIFY OTP -->
         <div id="resetStep2" class="hidden">
           <div class="field">
-            <label for="smsCodeInput">SMS OTP</label>
-            <input type="text" id="smsCodeInput" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="6-digit code">
+            <label for="smsCodeInput">
+              SMS OTP
+            </label>
+            <input
+              type="text"
+              id="smsCodeInput"
+              maxlength="6"
+              inputmode="numeric"
+              pattern="[0-9]{6}"
+              autocomplete="one-time-code"
+              placeholder="Enter 6-digit code"
+            >
           </div>
           <div class="field">
-            <label for="newPasswordInput">New Password</label>
-            <input type="password" id="newPasswordInput" maxlength="128" autocomplete="new-password" placeholder="Enter new password">
+            <label for="newPasswordInput">
+              New Password
+            </label>
+            <input
+              type="password"
+              id="newPasswordInput"
+              maxlength="128"
+              autocomplete="new-password"
+              placeholder="Enter new password"
+            >
           </div>
-          <button class="btn primary" style="width:100%;" onclick="App.submitPasswordReset()">Verify OTP & Update Password</button>
-          <button class="btn ghost" style="width:100%; margin-top:8px;" onclick="App.requestResetCode()">Resend OTP</button>
+          <div class="field">
+            <label for="confirmPasswordInput">
+              Confirm New Password
+            </label>
+            <input
+              type="password"
+              id="confirmPasswordInput"
+              maxlength="128"
+              autocomplete="new-password"
+              placeholder="Confirm new password"
+            >
+          </div>
+          <button
+            type="button"
+            class="btn primary"
+            style="width:100%;"
+            onclick="App.submitPasswordReset()"
+          >
+            Verify OTP & Update Password
+          </button>
+          <button
+            type="button"
+            class="btn ghost"
+            style="width:100%; margin-top:8px;"
+            onclick="App.requestResetCode()"
+          >
+            Resend OTP
+          </button>
         </div>
 
-        <button class="link-btn" onclick="App.showForgotPassword(false)">Back to Login</button>
+        <button
+          type="button"
+          class="link-btn"
+          onclick="App.showForgotPassword(false)"
+        >
+          Back to Login
+        </button>
       </div>
 
       <!-- 3. COMMAND CENTER -->
@@ -565,193 +632,193 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           <details class="compact-section" open>
             <summary>Attendance Overview<span class="section-subtitle">Live records, system status, and insights</span></summary>
             <div class="compact-section-body">
-        <div class="grid g2">
-          <div class="card">
-            <h3>Attendance Log</h3>
-            <div id="attendanceBoard" class="list" style="margin-top:12px;"></div>
-          </div>
-          <div class="card">
-            <h3>System Status</h3>
-            <div class="status-grid">
-              <div class="mini-stat"><span>Data mode</span><strong id="backendStatus">Local fallback</strong></div>
-              <div class="mini-stat"><span>Storage</span><strong>Browser storage</strong></div>
-              <div class="mini-stat"><span>Session</span><strong id="deskSessionCode">--</strong></div>
-              <div class="mini-stat"><span>Clock</span><strong id="deskClock">--:--</strong></div>
-            </div>
-            <div class="ai-panel" style="margin-top: 8px;">
-              <div class="ai-card">
-                <div class="tiny">AI insight</div>
-                <strong id="aiInsightValue">Ready</strong>
-                <span id="aiInsightText">Attendance flow is stable.</span>
+              <div class="grid g2">
+                <div class="card">
+                  <h3>Attendance Log</h3>
+                  <div id="attendanceBoard" class="list" style="margin-top:12px;"></div>
+                </div>
+                <div class="card">
+                  <h3>System Status</h3>
+                  <div class="status-grid">
+                    <div class="mini-stat"><span>Data mode</span><strong id="backendStatus">Local fallback</strong></div>
+                    <div class="mini-stat"><span>Storage</span><strong>Browser storage</strong></div>
+                    <div class="mini-stat"><span>Session</span><strong id="deskSessionCode">--</strong></div>
+                    <div class="mini-stat"><span>Clock</span><strong id="deskClock">--:--</strong></div>
+                  </div>
+                  <div class="ai-panel" style="margin-top: 8px;">
+                    <div class="ai-card">
+                      <div class="tiny">AI insight</div>
+                      <strong id="aiInsightValue">Ready</strong>
+                      <span id="aiInsightText">Attendance flow is stable.</span>
+                    </div>
+                  </div>
+                  <div class="ai-card" style="margin-top: 12px;">
+                    <div class="tiny">Strengths & weaknesses</div>
+                    <strong id="strengthSummary">No data</strong>
+                    <span id="weaknessSummary">No data</span>
+                    <div class="label" style="margin-top: 10px;">Main reason: <span id="mainReason" style="color: var(--ink);">--</span></div>
+                  </div>
+                  <p class="label">Secure access control</p>
+                  <p class="label">Live classroom sync</p>
+                  <p class="label">Verified attendance records</p>
+                </div>
+              </div>
+
+              <div class="analytics-grid">
+                <div class="card">
+                  <h3>Subject performance</h3>
+                  <p class="label">Present, late, and absent patterns by subject</p>
+                  <div id="subjectChart" class="bar-chart"></div>
+                </div>
+                <div class="card">
+                  <h3>Student overview</h3>
+                  <p class="label">Students needing attention today</p>
+                  <div id="studentSummary"></div>
+                </div>
               </div>
             </div>
-            <div class="ai-card" style="margin-top: 12px;">
-              <div class="tiny">Strengths & weaknesses</div>
-              <strong id="strengthSummary">No data</strong>
-              <span id="weaknessSummary">No data</span>
-              <div class="label" style="margin-top: 10px;">Main reason: <span id="mainReason" style="color: var(--ink);">--</span></div>
-            </div>
-            <p class="label">Secure access control</p>
-            <p class="label">Live classroom sync</p>
-            <p class="label">Verified attendance records</p>
-          </div>
-        </div>
-
-        <div class="analytics-grid">
-          <div class="card">
-            <h3>Subject performance</h3>
-            <p class="label">Present, late, and absent patterns by subject</p>
-            <div id="subjectChart" class="bar-chart"></div>
-          </div>
-          <div class="card">
-            <h3>Student overview</h3>
-            <p class="label">Students needing attention today</p>
-            <div id="studentSummary"></div>
-          </div>
-        </div>
-
-            </div>
           </details>
+
           <details class="compact-section">
             <summary>Class Schedule<span class="section-subtitle">Add, edit, or remove class periods</span></summary>
             <div class="compact-section-body">
-        <div class="card" style="margin-top:16px;">
-          <h3>Manage class schedule</h3>
-          <p class="label">Only the instructor desk can change periods. Changes are saved on this device and used by student check-in.</p>
-          <div id="scheduleNotice"></div>
-          <input type="hidden" id="scheduleEditId">
-          <div class="report-form" style="margin-top:14px;">
-            <div class="field">
-              <label for="scheduleDay">Day</label>
-              <select id="scheduleDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select>
-            </div>
-            <div class="field">
-              <label for="scheduleSubject">Subject</label>
-              <input id="scheduleSubject" type="text" list="subjectCatalog" maxlength="80" autocomplete="off" placeholder="e.g. Database Management" required>
-              <datalist id="subjectCatalog"></datalist>
-              <p class="helper-text">Type a new subject directly, or choose one already in your subject catalog.</p>
-            </div>
-            <div class="field">
-              <label for="scheduleStart">Start time</label>
-              <input type="time" id="scheduleStart" required>
-            </div>
-            <div class="field">
-              <label for="scheduleEnd">End time</label>
-              <input type="time" id="scheduleEnd" required>
-            </div>
-            <div class="field">
-              <label for="scheduleRoom">Room</label>
-              <input type="text" id="scheduleRoom" maxlength="50" placeholder="Room 201" required>
-            </div>
-            <div class="field">
-              <label for="scheduleTeacher">Teacher</label>
-              <input type="text" id="scheduleTeacher" maxlength="80" placeholder="Instructor" required>
-            </div>
-            <button class="btn primary" onclick="App.saveScheduleSlot()">Save period</button>
-            <button class="btn ghost" onclick="App.resetScheduleEditor()">Clear editor</button>
-          </div>
-          <div class="card" style="margin-top:16px; background:linear-gradient(180deg,#fff,#faf5ff);">
-            <h3 style="margin-bottom:4px;">Subject Catalog</h3>
-            <p class="label">Create reusable subjects once, then use them in schedules and attendance.</p>
-            <div id="subjectNotice"></div>
-            <div class="subject-tools">
-              <div class="field" style="margin:0;">
-                <label for="newSubjectName">New subject</label>
-                <input id="newSubjectName" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Database Management" aria-describedby="subjectHelp">
-              </div>
-              <button type="button" class="btn primary" onclick="App.addSubject()">+ Add Subject</button>
-            </div>
-            <p id="subjectHelp" class="helper-text">Press Enter to add quickly. New subjects are immediately available in student check-in, coverage, and schedules.</p>
-            <div class="subject-catalog-toolbar">
-              <input id="subjectSearch" type="search" maxlength="80" autocomplete="off" placeholder="Search subjects..." aria-label="Search subjects">
-              <span id="subjectCount" class="subject-count">0 subjects</span>
-            </div>
-            <div id="subjectList" class="subject-list" aria-live="polite"></div>
-          </div>
-          <div id="scheduleManager" class="schedule-list" style="margin-top:16px;"></div>
-        </div>
+              <div class="card" style="margin-top:16px;">
+                <h3>Manage class schedule</h3>
+                <p class="label">Only the instructor desk can change periods. Changes are saved on this device and used by student check-in.</p>
+                <div id="scheduleNotice"></div>
+                <input type="hidden" id="scheduleEditId">
+                <div class="report-form" style="margin-top:14px;">
+                  <div class="field">
+                    <label for="scheduleDay">Day</label>
+                    <select id="scheduleDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select>
+                  </div>
+                  <div class="field">
+                    <label for="scheduleSubject">Subject</label>
+                    <input id="scheduleSubject" type="text" list="subjectCatalog" maxlength="80" autocomplete="off" placeholder="e.g. Database Management" required>
+                    <datalist id="subjectCatalog"></datalist>
+                    <p class="helper-text">Type a new subject directly, or choose one already in your subject catalog.</p>
+                  </div>
+                  <div class="field">
+                    <label for="scheduleStart">Start time</label>
+                    <input type="time" id="scheduleStart" required>
+                  </div>
+                  <div class="field">
+                    <label for="scheduleEnd">End time</label>
+                    <input type="time" id="scheduleEnd" required>
+                  </div>
+                  <div class="field">
+                    <label for="scheduleRoom">Room</label>
+                    <input type="text" id="scheduleRoom" maxlength="50" placeholder="Room 201" required>
+                  </div>
+                  <div class="field">
+                    <label for="scheduleTeacher">Teacher</label>
+                    <input type="text" id="scheduleTeacher" maxlength="80" placeholder="Instructor" required>
+                  </div>
+                  <button class="btn primary" onclick="App.saveScheduleSlot()">Save period</button>
+                  <button class="btn ghost" onclick="App.resetScheduleEditor()">Clear editor</button>
+                </div>
 
+                <div class="card" style="margin-top:16px; background:linear-gradient(180deg,#fff,#faf5ff);">
+                  <h3 style="margin-bottom:4px;">Subject Catalog</h3>
+                  <p class="label">Create reusable subjects once, then use them in schedules and attendance.</p>
+                  <div id="subjectNotice"></div>
+                  <div class="subject-tools">
+                    <div class="field" style="margin:0;">
+                      <label for="newSubjectName">New subject</label>
+                      <input id="newSubjectName" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Database Management" aria-describedby="subjectHelp">
+                    </div>
+                    <button type="button" class="btn primary" onclick="App.addSubject()">+ Add Subject</button>
+                  </div>
+                  <p id="subjectHelp" class="helper-text">Press Enter to add quickly. New subjects are immediately available in student check-in, coverage, and schedules.</p>
+                  <div class="subject-catalog-toolbar">
+                    <input id="subjectSearch" type="search" maxlength="80" autocomplete="off" placeholder="Search subjects..." aria-label="Search subjects">
+                    <span id="subjectCount" class="subject-count">0 subjects</span>
+                  </div>
+                  <div id="subjectList" class="subject-list" aria-live="polite"></div>
+                </div>
+                <div id="scheduleManager" class="schedule-list" style="margin-top:16px;"></div>
+              </div>
             </div>
           </details>
+
           <details class="compact-section">
             <summary>Teacher & Classroom Coverage<span class="section-subtitle">Record teacher absence or substitute coverage</span></summary>
             <div class="compact-section-body">
-        <div class="card" style="margin-top:16px;">
-          <h3>Teacher and classroom coverage report</h3>
-          <p class="label" style="margin:6px 0 16px;">Use this when the teacher is absent or a substitute / third person is managing the class.</p>
-          <div id="coverageNotice"></div>
-          <div class="report-form">
-            <div class="field">
-              <label for="coverageSubject">Subject</label>
-              <select id="coverageSubject">
-                <option>Mathematics</option><option>Science</option><option>English</option><option>Computer Studies</option><option>History</option><option>Filipino</option><option>Physical Education</option><option>Arts</option><option>Other</option>
-              </select>
+              <div class="card" style="margin-top:16px;">
+                <h3>Teacher and classroom coverage report</h3>
+                <p class="label" style="margin:6px 0 16px;">Use this when the teacher is absent or a substitute / third person is managing the class.</p>
+                <div id="coverageNotice"></div>
+                <div class="report-form">
+                  <div class="field">
+                    <label for="coverageSubject">Subject</label>
+                    <select id="coverageSubject">
+                      <option>Mathematics</option><option>Science</option><option>English</option><option>Computer Studies</option><option>History</option><option>Filipino</option><option>Physical Education</option><option>Arts</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="coverageStatus">Coverage status</label>
+                    <select id="coverageStatus"><option>Teacher present</option><option>Teacher absent</option><option>Substitute present</option><option>Class suspended</option></select>
+                  </div>
+                  <div class="field">
+                    <label for="coverageReason">Reason</label>
+                    <select id="coverageReason"><option>Official duty</option><option>Sick leave</option><option>Emergency</option><option>Unknown</option><option>Other</option></select>
+                  </div>
+                  <div class="field">
+                    <label for="coverageReporter">Reported by</label>
+                    <select id="coverageReporter"><option>Teacher/Substitute</option><option>Student representative</option><option>Third-party representative</option></select>
+                  </div>
+                  <div class="field full">
+                    <label for="coverageNote">Short note</label>
+                    <input type="text" id="coverageNote" maxlength="160" placeholder="Optional context for the attendance record">
+                  </div>
+                  <button class="btn primary full" onclick="App.logClassroomReport()">Save Coverage Report</button>
+                </div>
+                <div id="coverageBoard" class="list" style="margin-top:16px;"></div>
+              </div>
             </div>
-            <div class="field">
-              <label for="coverageStatus">Coverage status</label>
-              <select id="coverageStatus"><option>Teacher present</option><option>Teacher absent</option><option>Substitute present</option><option>Class suspended</option></select>
-            </div>
-            <div class="field">
-              <label for="coverageReason">Reason</label>
-              <select id="coverageReason"><option>Official duty</option><option>Sick leave</option><option>Emergency</option><option>Unknown</option><option>Other</option></select>
-            </div>
-            <div class="field">
-              <label for="coverageReporter">Reported by</label>
-              <select id="coverageReporter"><option>Teacher/Substitute</option><option>Student representative</option><option>Third-party representative</option></select>
-            </div>
-            <div class="field full">
-              <label for="coverageNote">Short note</label>
-              <input type="text" id="coverageNote" maxlength="160" placeholder="Optional context for the attendance record">
-            </div>
-            <button class="btn primary full" onclick="App.logClassroomReport()">Save Coverage Report</button>
-          </div>
-          <div id="coverageBoard" class="list" style="margin-top:16px;"></div>
-        </div>
-      </div>
           </details>
-        <div id="adminManagementPanel" class="card hidden" style="margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div>
-              <h3>Admin • Instructor Management</h3>
-              <p class="label">Create, activate, deactivate, reset passwords, and manage instructor accounts on this device.</p>
-            </div>
-            <span class="badge present">ADMIN ONLY</span>
-          </div>
-          <div id="instructorManagementNotice"></div>
-          <form id="addInstructorForm" class="report-form" autocomplete="off" autocomplete="off" style="margin-top:14px;">
-            <div class="field">
-              <label for="newInstructorName">Full name</label>
-              <input id="newInstructorName" type="text" maxlength="80" placeholder="e.g. Maria Santos" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorUsername">Username</label>
-              <input id="newInstructorUsername" type="text" maxlength="32" autocomplete="off" placeholder="e.g. msantos" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorPassword">Temporary password</label>
-              <input id="newInstructorPassword" type="password" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorPhone">Philippine mobile number</label>
-              <input id="newInstructorPhone" type="tel" maxlength="16" autocomplete="tel" placeholder="09171234567" required>
-            </div>
-            <div class="field">
-              <label for="newInstructorSubjects">Subjects</label>
-              <input id="newInstructorSubjects" type="text" maxlength="200" placeholder="e.g. Mathematics, Science">
-            </div>
-            <button class="btn primary" type="submit">Add Instructor</button>
-          </form>
-          <div class="instructor-toolbar">
-            <input id="instructorSearch" type="search" maxlength="80" placeholder="Search instructor or username..." aria-label="Search instructors">
-            <span id="instructorCount" class="subject-count">0 instructors</span>
-          </div>
-          <div id="instructorList" class="list" style="margin-top:14px;"></div>
-        </div>
 
+          <div id="adminManagementPanel" class="card hidden" style="margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div>
+                <h3>Admin • Instructor Management</h3>
+                <p class="label">Create, activate, deactivate, reset passwords, and manage instructor accounts on this device.</p>
+              </div>
+              <span class="badge present">ADMIN ONLY</span>
+            </div>
+            <div id="instructorManagementNotice"></div>
+            <form id="addInstructorForm" class="report-form" autocomplete="off" style="margin-top:14px;">
+              <div class="field">
+                <label for="newInstructorName">Full name</label>
+                <input id="newInstructorName" type="text" maxlength="80" placeholder="e.g. Maria Santos" required>
+              </div>
+              <div class="field">
+                <label for="newInstructorUsername">Username</label>
+                <input id="newInstructorUsername" type="text" maxlength="32" autocomplete="off" placeholder="e.g. msantos" required>
+              </div>
+              <div class="field">
+                <label for="newInstructorPassword">Temporary password</label>
+                <input id="newInstructorPassword" type="password" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters" required>
+              </div>
+              <div class="field">
+                <label for="newInstructorPhone">Philippine mobile number</label>
+                <input id="newInstructorPhone" type="tel" maxlength="16" autocomplete="tel" placeholder="09171234567" required>
+              </div>
+              <div class="field">
+                <label for="newInstructorSubjects">Subjects</label>
+                <input id="newInstructorSubjects" type="text" maxlength="200" placeholder="e.g. Mathematics, Science">
+              </div>
+              <button class="btn primary" type="submit">Add Instructor</button>
+            </form>
+            <div class="instructor-toolbar">
+              <input id="instructorSearch" type="search" maxlength="80" placeholder="Search instructor or username..." aria-label="Search instructors">
+              <span id="instructorCount" class="subject-count">0 instructors</span>
+            </div>
+            <div id="instructorList" class="list" style="margin-top:14px;"></div>
+          </div>
         </div>
       </div>
     </section>
-
   </div>
 
   <!-- QR ACCESS MODAL -->
@@ -780,7 +847,6 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 </div>
 
 <script>
-
 /**
  * Smart Attendance Platform Engine - Integrated API Client
  * Features: PostgreSQL Backend Sync, JWT Token Gateways, WebRTC Optics Engine, SMS Password Recovery
@@ -788,28 +854,17 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 
 const CONFIG = Object.freeze({
   dbName: 'BITCT_AttendanceSystem',
-  dbVersion: 2,
+  dbVersion: 1,
   storeName: 'records',
   metaStore: 'metadata',
   lateThresholdMins: 15,
-  // GitHub Pages is static hosting. Leave this empty for browser-only/offline mode.
-  // For a real shared server, set window.BITCT_API_BASE_URL before this script loads.
-  API_BASE_URL: String(window.BITCT_API_BASE_URL || '').trim().replace(/\/+$/, ''),
-  REMOTE_API_ENABLED: Boolean(String(window.BITCT_API_BASE_URL || '').trim()),
-  QR_SIZE: 240,
-  MAX_RECORDS: 50000,
-  MAX_SCHEDULES: 100,
-  SESSION_TIMEOUT_MS: 30 * 60 * 1000
+  API_BASE_URL: '',
+  REMOTE_API_ENABLED: false,
+  QR_SIZE: 240
 });
 
-// The HTML file is fully usable on GitHub Pages without a backend.
-// IMPORTANT: client-side authentication is demo/local-only; real security requires a server.
 const LOCAL_FALLBACK_ALLOWED = true;
 const LOCAL_TOKEN_PREFIX = 'local-';
-
-// Static browser mode is intentionally local-only. A hard-coded admin password must
-// never become a public login on GitHub Pages.
-const LOCAL_BOOTSTRAP_ALLOWED = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 
 const DEFAULT_SUBJECTS = Object.freeze([
   'Mathematics', 'Science', 'English', 'Computer Studies', 'History',
@@ -832,19 +887,8 @@ const CLASS_SCHEDULE = Object.freeze([
 /* Local Database Fallback Abstraction Layer */
 class Database {
   static async getDB() {
-    if (!('indexedDB' in window)) {
-      throw new Error('IndexedDB is unavailable in this browser.');
-    }
-    if (Database._dbPromise) return Database._dbPromise;
-
-    Database._dbPromise = new Promise((resolve, reject) => {
-      let request;
-      try {
-        request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
-      } catch (error) {
-        reject(error);
-        return;
-      }
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
         if (!db.objectStoreNames.contains(CONFIG.storeName)) {
@@ -856,33 +900,20 @@ class Database {
           db.createObjectStore(CONFIG.metaStore, { keyPath: 'key' });
         }
       };
-      request.onsuccess = () => {
-        const db = request.result;
-        db.onversionchange = () => db.close();
-        resolve(db);
-      };
-      request.onerror = () => {
-        Database._dbPromise = null;
-        reject(request.error || new Error('Unable to open local database.'));
-      };
-      request.onblocked = () => console.warn('Local database upgrade is blocked by another tab.');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
     });
-    return Database._dbPromise;
   }
 
   static async executeTransaction(storeName, mode, callback) {
     const db = await Database.getDB();
     return new Promise((resolve, reject) => {
-      try {
-        const tx = db.transaction(storeName, mode);
-        const store = tx.objectStore(storeName);
-        const request = callback(store);
-        tx.oncomplete = () => resolve(request ? request.result : null);
-        tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
-        tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
-      } catch (error) {
-        reject(error);
-      }
+      const tx = db.transaction(storeName, mode);
+      const store = tx.objectStore(storeName);
+      const request = callback(store);
+      tx.oncomplete = () => resolve(request ? request.result : null);
+      tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
+      tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
     });
   }
 
@@ -904,18 +935,10 @@ class Database {
 
   static async clearAll() {
     const db = await Database.getDB();
-    return new Promise((resolve, reject) => {
-      try {
-        const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
-        tx.objectStore(CONFIG.storeName).clear();
-        tx.objectStore(CONFIG.metaStore).clear();
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error || new Error('Database clear failed.'));
-        tx.onabort = () => reject(tx.error || new Error('Database clear aborted.'));
-      } catch (error) {
-        reject(error);
-      }
-    });
+    const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
+    tx.objectStore(CONFIG.storeName).clear();
+    tx.objectStore(CONFIG.metaStore).clear();
+    return new Promise(res => tx.oncomplete = res);
   }
 }
 
@@ -946,6 +969,8 @@ class App {
   static currentUser = null;
   static passwordChangeTarget = null;
   static sessionTimer = null;
+  static activeOtpCode = null;
+  static activeOtpPhone = null;
 
   static async hashSecret(secret, saltHex = null) {
     if (!window.crypto || !window.crypto.subtle) {
@@ -959,12 +984,10 @@ class App {
 
   static async verifySecret(secret, stored) {
     if (!stored) return false;
-    // New accounts use salted PBKDF2.
     if (stored.salt && stored.hash) {
       const derived = await App.hashSecret(secret, stored.salt);
       return derived.hash === stored.hash;
     }
-    // Legacy SHA-256 records are accepted once, then upgraded on successful login.
     if (typeof stored === 'string') {
       const bytes = new TextEncoder().encode(secret);
       const digest = await crypto.subtle.digest('SHA-256', bytes);
@@ -980,13 +1003,100 @@ class App {
     return String(values[0] % (10 ** length)).padStart(length, '0');
   }
 
+  static normalizePhilippinePhone(phone) {
+    let digits = String(phone || '').replace(/\D/g, '');
+    if (digits.startsWith('63')) digits = '0' + digits.slice(2);
+    if (/^09\d{9}$/.test(digits)) return digits;
+    return null;
+  }
+
   static showNotice(id, message, type) {
     const notice = document.getElementById(id);
+    if (!notice) return;
     notice.replaceChildren();
     const box = document.createElement('div');
     box.className = `notice ${type}`;
     box.textContent = message;
     notice.appendChild(box);
+  }
+
+  static showForgotPassword(show) {
+    document.getElementById('instructorAuth').classList.toggle('hidden', show);
+    document.getElementById('forgotPasswordForm').classList.toggle('hidden', !show);
+    document.getElementById('resetNotice').replaceChildren();
+    if (show) {
+      document.getElementById('resetStep1').classList.remove('hidden');
+      document.getElementById('resetStep2').classList.add('hidden');
+    }
+  }
+
+  static async requestResetCode() {
+    if (Date.now() < App.resetLockedUntil) {
+      App.showNotice('resetNotice', 'Too many requests. Please wait before trying again.', 'bad');
+      return;
+    }
+
+    const phoneRaw = document.getElementById('resetPhone').value;
+    const phone = App.normalizePhilippinePhone(phoneRaw);
+    if (!phone) {
+      App.showNotice('resetNotice', 'Enter a valid 11-digit Philippine mobile number starting with 09.', 'bad');
+      return;
+    }
+
+    App.activeOtpPhone = phone;
+    App.activeOtpCode = await App.randomDigits(6);
+
+    if (CONFIG.REMOTE_API_ENABLED) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/request-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        if (!response.ok) throw new Error('Could not send OTP');
+      } catch (e) {
+        App.showNotice('resetNotice', 'SMS gateway offline. Local OTP active.', 'warn');
+      }
+    }
+
+    document.getElementById('resetStep1').classList.add('hidden');
+    document.getElementById('resetStep2').classList.remove('hidden');
+    App.showNotice('resetNotice', `OTP code sent to ${phone}. (Demo OTP: ${App.activeOtpCode})`, 'ok');
+  }
+
+  static async submitPasswordReset() {
+    const enteredOtp = document.getElementById('smsCodeInput').value.trim();
+    const newPassword = document.getElementById('newPasswordInput').value;
+    const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+    if (enteredOtp !== App.activeOtpCode) {
+      App.showNotice('resetNotice', 'Invalid OTP code. Please check and try again.', 'bad');
+      return;
+    }
+    if (!App.passwordValid(newPassword)) {
+      App.showNotice('resetNotice', 'New password must be 10–128 characters and include uppercase, lowercase, and a number.', 'bad');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      App.showNotice('resetNotice', 'Passwords do not match.', 'bad');
+      return;
+    }
+
+    const instructors = await App.getInstructors();
+    const instructor = instructors.find(i => i.phone === App.activeOtpPhone);
+
+    if (instructor) {
+      instructor.passwordHash = await App.hashSecret(newPassword);
+      instructor.passwordChangedAt = new Date().toISOString();
+      await App.saveInstructors(instructors);
+    } else {
+      const updatedHash = await App.hashSecret(newPassword);
+      localStorage.setItem('instructorPinHash', JSON.stringify(updatedHash));
+      localStorage.setItem('adminPasswordChangedAt', new Date().toISOString());
+    }
+
+    App.showNotice('authNotice', 'Password reset successful! Please sign in with your new password.', 'ok');
+    App.showForgotPassword(false);
   }
 
   static updateConnectionState() {
@@ -1039,13 +1149,11 @@ class App {
     const subjectSearch = document.getElementById('subjectSearch');
     if (subjectSearch) subjectSearch.addEventListener('input', () => App.renderSubjectCatalog());
 
-    // Never trust role/identity values from sessionStorage alone. A public page can be inspected and edited.
-    // The server must validate the token before granting protected API access.
     if (sessionStorage.getItem('authToken') && !LOCAL_FALLBACK_ALLOWED) {
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('authRole');
       sessionStorage.removeItem('authUsername');
-    App.currentUser = null;
+      App.currentUser = null;
     }
 
     await App.refreshDashboard();
@@ -1068,35 +1176,13 @@ class App {
     }
   }
 
-  static sanitizeSchedule(rawSchedule) {
-    if (!Array.isArray(rawSchedule)) return [];
-    const days = new Set(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
-    const seen = new Set();
-    return rawSchedule.slice(0, CONFIG.MAX_SCHEDULES).map((slot, index) => {
-      const item = slot && typeof slot === 'object' ? slot : {};
-      const id = String(item.id || `remote-${index}`).slice(0, 80);
-      const day = String(item.day || '');
-      const start = String(item.start || '');
-      const end = String(item.end || '');
-      const subject = App.normalizeSubject(item.subject);
-      const room = String(item.room || '').trim().slice(0, 50);
-      const teacher = String(item.teacher || '').trim().slice(0, 80);
-      if (!days.has(day) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(start) ||
-          !/^([01]\d|2[0-3]):[0-5]\d$/.test(end) || start >= end ||
-          subject.length < 2 || !room || !teacher || seen.has(id)) return null;
-      seen.add(id);
-      return { id, day, start, end, subject, room, teacher };
-    }).filter(Boolean);
-  }
-
   static async loadSchedule() {
     if (CONFIG.REMOTE_API_ENABLED) try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/api/schedule`);
       if (response.ok) {
         const remoteSchedule = await response.json();
-        const safeSchedule = App.sanitizeSchedule(remoteSchedule);
-        if (safeSchedule.length) {
-          App.schedule = safeSchedule;
+        if (Array.isArray(remoteSchedule) && remoteSchedule.length) {
+          App.schedule = remoteSchedule;
           await Database.putMeta('class_schedule', App.schedule);
           App.setBackendStatus('Cloud available');
           return;
@@ -1106,9 +1192,8 @@ class App {
       console.warn('Shared schedule API unavailable; using local schedule.', error);
     }
     const saved = await Database.getMeta('class_schedule');
-    const safeSaved = App.sanitizeSchedule(saved?.value);
-    if (safeSaved.length) {
-      App.schedule = safeSaved;
+    if (saved && Array.isArray(saved.value) && saved.value.length) {
+      App.schedule = saved.value;
     } else {
       App.schedule = [...CLASS_SCHEDULE];
       await Database.putMeta('class_schedule', App.schedule);
@@ -1396,10 +1481,6 @@ class App {
   }
 
   static async saveScheduleSlot() {
-    if (!App.currentUser || !['admin', 'instructor'].includes(App.currentUser.role)) {
-      App.showNotice('scheduleNotice', 'Unlock the Instructor Desk before changing the schedule.', 'bad');
-      return;
-    }
     const editId = document.getElementById('scheduleEditId').value;
     const day = document.getElementById('scheduleDay').value;
     const subject = App.normalizeSubject(document.getElementById('scheduleSubject').value);
@@ -1987,7 +2068,7 @@ class App {
         instructor.passwordChangedAt = new Date().toISOString();
         instructor.mustChangePassword = true;
         await App.saveInstructors(instructors);
-        if (CONFIG.REMOTE_API_ENABLED) App.showNotice('instructorManagementNotice', 'Local password reset saved. The remote account must also be updated by the server-side admin reset endpoint.', 'warn');
+        if (CONFIG.REMOTE_API_ENABLED) App.showNotice('instructorManagementNotice', 'Local password reset saved. Configure the server-side admin password endpoint to keep remote authentication in sync.', 'warn');
         App.closeSecurityModal();
         App.showNotice('instructorManagementNotice', `Password reset for ${instructor.name}. They must change it after signing in.`, 'ok');
         App.renderInstructorManagement();
@@ -2024,10 +2105,6 @@ class App {
     }
   }
 
-  static isLocalDevelopmentHost() {
-    return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
-  }
-
   static async authenticateInstructor() {
     const username = document.getElementById('instructorUsername').value.trim().toLowerCase();
     const password = document.getElementById('pinInput').value;
@@ -2048,819 +2125,153 @@ class App {
       let adminVerified = false;
       if (storedHash) adminVerified = await App.verifySecret(password, (() => { try { return JSON.parse(storedHash); } catch { return storedHash; } })());
       else if (legacyPin) adminVerified = password === legacyPin;
-      else if (LOCAL_FALLBACK_ALLOWED && LOCAL_BOOTSTRAP_ALLOWED && username === 'admin') {
-        // Demo bootstrap is available only on localhost, never on a public GitHub Pages origin.
-        adminVerified = password === '2468';
-      }
+      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin') adminVerified = password === '2468';
 
-      // Built-in local administrator bootstrap is strictly limited to localhost.
-      if (LOCAL_FALLBACK_ALLOWED && LOCAL_BOOTSTRAP_ALLOWED && username === 'admin' && adminVerified) {
-        const firstAdminSetup = !storedHash && !legacyPin;
+      if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && adminVerified) {
         if (!storedHash || typeof storedHash === 'string') {
           const upgraded = await App.hashSecret(password);
           localStorage.setItem('instructorPinHash', JSON.stringify(upgraded));
           localStorage.setItem('adminPasswordChangedAt', new Date().toISOString());
           localStorage.removeItem('instructorPin');
         }
-        App.currentUser = { username: 'admin', name: 'System Administrator', role: 'admin', subjects: 'All subjects', mustChangePassword: firstAdminSetup };
-        App.renderSecurityIdentity();
-        if (firstAdminSetup) setTimeout(() => App.openChangePassword(), 150);
-        sessionStorage.setItem('authToken', 'local-admin-token');
-        sessionStorage.setItem('authRole', 'admin');
-        sessionStorage.setItem('authUsername', 'admin');
-        App.authFailures = 0;
-        App.armSessionTimeout();
-        App.setBackendStatus('Local admin');
-        document.getElementById('instructorAuth').classList.add('hidden');
-        document.getElementById('instructorDesk').classList.remove('hidden');
-        App.renderInstructorManagement();
-        await App.refreshDashboard();
+        App.currentUser = { username: 'admin', name: 'System Administrator', role: 'admin' };
+        App.unlockDesk();
         return;
       }
 
-      // Instructor accounts created by the administrator.
-      const instructor = instructors.find(i => i.username === username);
-      if (LOCAL_FALLBACK_ALLOWED && instructor && instructor.active && await App.verifySecret(password, instructor.passwordHash)) {
-        App.currentUser = {
-          username: instructor.username,
-          name: instructor.name,
-          role: 'instructor',
-          subjects: instructor.subjects || ''
-        };
-        App.renderSecurityIdentity();
-        if (instructor.mustChangePassword) setTimeout(() => App.openChangePassword(), 150);
-        sessionStorage.setItem('authToken', 'local-instructor-token');
-        sessionStorage.setItem('authRole', 'instructor');
-        sessionStorage.setItem('authUsername', instructor.username);
-        App.authFailures = 0;
-        App.armSessionTimeout();
-        App.setBackendStatus('Local instructor');
-        document.getElementById('instructorAuth').classList.add('hidden');
-        document.getElementById('instructorDesk').classList.remove('hidden');
-        App.renderInstructorManagement();
-        await App.refreshDashboard();
+      const instructor = instructors.find(i => i.username === username && i.active);
+      if (instructor && await App.verifySecret(password, instructor.passwordHash)) {
+        App.currentUser = { username: instructor.username, name: instructor.name, role: 'instructor', mustChangePassword: instructor.mustChangePassword };
+        App.unlockDesk();
         return;
       }
 
-      if (instructor && !instructor.active) {
-        App.showNotice('authNotice', 'This instructor account is inactive. Ask an administrator to activate it.', 'bad');
-        return;
-      }
-    } catch (error) {
-      App.showNotice('authNotice', error.message || 'Unable to read local instructor accounts.', 'bad');
-      return;
-    }
-
-
-
-
-
-    try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
-      }
-
-      sessionStorage.setItem('authToken', data.token);
-      sessionStorage.setItem('authRole', data.role || 'instructor');
-      sessionStorage.setItem('authUsername', username);
-      App.currentUser = { username, name: data.name || username, role: data.role || 'instructor', subjects: data.subjects || '', mustChangePassword: !!data.mustChangePassword };
-      App.renderSecurityIdentity();
-      App.authFailures = 0;
-      App.armSessionTimeout();
-
-      document.getElementById('instructorAuth').classList.add('hidden');
-      document.getElementById('instructorDesk').classList.remove('hidden');
-      document.getElementById('authNotice').replaceChildren();
-
-      await App.refreshDashboard();
-
-    } catch (err) {
-      App.authFailures += 1;
+      App.authFailures++;
       if (App.authFailures >= 5) App.authLockedUntil = Date.now() + 60000;
-      App.updateConnectionState();
-      App.showNotice('authNotice', LOCAL_FALLBACK_ALLOWED
-        ? 'The system is currently unavailable. Please check your connection or use the local admin fallback.'
-        : 'The instructor service is currently unavailable. Please check the connection and try again.', 'bad');
+      App.showNotice('authNotice', 'Invalid credentials. Please verify username and password.', 'bad');
+    } catch (e) {
+      App.showNotice('authNotice', 'Authentication failed.', 'bad');
     }
   }
 
-  static renderSecurityIdentity() {
-    const user = App.currentUser;
-    const name = document.getElementById('signedInName');
-    const role = document.getElementById('signedInRole');
-    const age = document.getElementById('passwordAgeBadge');
-    if (!user) return;
-    if (name) name.textContent = user.name || user.username;
-    if (role) role.textContent = `${String(user.role || 'account').toUpperCase()} • @${user.username}`;
-    const setAge = async () => {
-      let changed = null;
-      if (user.role === 'admin') {
-        const raw = localStorage.getItem('adminPasswordChangedAt'); changed = raw ? new Date(raw) : null;
-      } else {
-        const instructors = await App.getInstructors();
-        changed = new Date(instructors.find(i => i.username === user.username)?.passwordChangedAt || 0);
-      }
-      if (age) age.textContent = changed && changed.getTime() > 0 ? `Password changed ${Math.max(0,Math.floor((Date.now()-changed.getTime())/86400000))}d ago` : 'Password update recommended';
-    };
-    setAge();
+  static unlockDesk() {
+    document.getElementById('instructorAuth').classList.add('hidden');
+    document.getElementById('instructorDesk').classList.remove('hidden');
+    document.getElementById('signedInName').textContent = App.currentUser.name;
+    document.getElementById('signedInRole').textContent = App.currentUser.role.toUpperCase();
+    App.renderInstructorManagement();
+    App.refreshDashboard();
   }
 
-  static getPublicAccessUrl() {
-    // Remove any temporary reset fragment before creating the public QR.
-    const url = new URL(window.location.href);
-    url.hash = '';
-    return url.toString();
+  static logoutInstructor() {
+    App.currentUser = null;
+    sessionStorage.clear();
+    document.getElementById('instructorDesk').classList.add('hidden');
+    document.getElementById('instructorAuth').classList.remove('hidden');
+    document.getElementById('pinInput').value = '';
+    App.showNotice('authNotice', 'Session locked.', 'warn');
+  }
+
+  static async refreshDashboard() {
+    const records = await Database.getAllRecords();
+    const today = App.getTodayKey();
+    const todayRecords = records.filter(r => r.dateKey === today && r.recordType !== 'classroom_report');
+
+    const total = todayRecords.length;
+    const present = todayRecords.filter(r => r.status === 'present').length;
+    const late = todayRecords.filter(r => r.status === 'late').length;
+    const flagged = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statPresent').textContent = present;
+    document.getElementById('statLate').textContent = late;
+    document.getElementById('statFlags').textContent = flagged;
+
+    const rate = total > 0 ? Math.round(((present + late) / total) * 100) : 100;
+    document.getElementById('presenceRate').textContent = `${rate}%`;
+    document.getElementById('presenceMeter').style.width = `${rate}%`;
+
+    const board = document.getElementById('attendanceBoard');
+    if (board) {
+      board.replaceChildren();
+      todayRecords.slice().reverse().forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `<div><strong>${r.name}</strong> (${r.studentId})<br><small>${r.subject} • ${new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</small></div>
+                          <span class="badge ${r.status}">${r.status}</span>`;
+        board.appendChild(item);
+      });
+    }
+  }
+
+  static async logClassroomReport() {
+    const subject = document.getElementById('coverageSubject').value;
+    const status = document.getElementById('coverageStatus').value;
+    const reason = document.getElementById('coverageReason').value;
+    const reporterRole = document.getElementById('coverageReporter').value;
+    const note = document.getElementById('coverageNote').value.trim();
+
+    await Database.putRecord({
+      id: window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${await App.randomDigits(6)}`,
+      recordType: 'classroom_report',
+      subject,
+      status,
+      reason,
+      reporterRole,
+      note,
+      dateKey: App.getTodayKey(),
+      timestamp: new Date().toISOString()
+    });
+
+    App.showNotice('coverageNotice', 'Coverage report saved.', 'ok');
+    document.getElementById('coverageNote').value = '';
   }
 
   static openAccessQR() {
     const modal = document.getElementById('qrModal');
     const box = document.getElementById('accessQr');
-    const urlEl = document.getElementById('accessQrUrl');
-    if (!modal || !box || !urlEl) return;
-    const url = App.getPublicAccessUrl();
-    box.replaceChildren();
-    urlEl.textContent = url;
-    if (window.QRCode) {
-      new QRCode(box, { text: url, width: CONFIG.QR_SIZE, height: CONFIG.QR_SIZE, correctLevel: QRCode.CorrectLevel.M });
-    } else {
-      const msg = document.createElement('div');
-      msg.className = 'notice warn';
-      msg.textContent = 'QR library is still loading. Please try again in a moment.';
-      box.appendChild(msg);
-      setTimeout(() => {
-        if (modal.classList.contains('open') && window.QRCode) App.openAccessQR();
-      }, 500);
+    const urlDisplay = document.getElementById('accessQrUrl');
+    const pageUrl = window.location.href;
+
+    if (box) {
+      box.replaceChildren();
+      if (window.QRCode) {
+        new QRCode(box, { text: pageUrl, width: CONFIG.QR_SIZE, height: CONFIG.QR_SIZE });
+      } else {
+        box.textContent = pageUrl;
+      }
     }
-    modal.classList.add('open');
+    if (urlDisplay) urlDisplay.textContent = pageUrl;
+    if (modal) modal.classList.add('open');
   }
 
   static closeAccessQR() {
     document.getElementById('qrModal')?.classList.remove('open');
   }
 
-  static async copyAccessUrl() {
-    const url = App.getPublicAccessUrl();
-    try {
-      await navigator.clipboard.writeText(url);
-      App.showNotice('homeNotice', 'Website link copied. You can paste it on your phone.', 'ok');
-    } catch {
-      window.prompt('Copy this website address:', url);
-    }
-  }
-
-  static showForgotPassword(show) {
-    const authForm = document.getElementById('instructorAuth');
-    const resetForm = document.getElementById('forgotPasswordForm');
-
-    if (show) {
-      authForm.classList.add('hidden');
-      resetForm.classList.remove('hidden');
-    } else {
-      resetForm.classList.add('hidden');
-      authForm.classList.remove('hidden');
-    }
-  }
-
-  static normalizePhilippinePhone(input) {
-    const digits = String(input || '').replace(/[^0-9+]/g, '');
-    if (/^09\d{9}$/.test(digits)) return '63' + digits.slice(1);
-    if (/^639\d{9}$/.test(digits)) return digits;
-    if (/^\+639\d{9}$/.test(digits)) return digits.slice(1);
-    if (/^9\d{9}$/.test(digits)) return '63' + digits;
-    return null;
-  }
-
-  static async requestResetCode() {
-    const phoneInput = document.getElementById('resetPhone').value.trim();
-    const phone = App.normalizePhilippinePhone(phoneInput);
-
-    if (!phone) {
-      App.showNotice('resetNotice', 'Please enter a valid Philippine mobile number.', 'bad');
-      return;
-    }
-
-    if (Date.now() < App.resetLockedUntil) {
-      App.showNotice('resetNotice', 'Too many reset attempts. Try again in one minute.', 'bad');
-      return;
-    }
-
-    // GitHub/static mode: generate a one-time local recovery code.
-    // Real SMS delivery requires a server-side provider and must not be implemented
-    // with provider credentials inside this HTML file.
-    if (!CONFIG.REMOTE_API_ENABLED) {
-      const instructors = await App.getInstructors();
-      const instructor = instructors.find(i => i.phone === phone);
-
-      // Do not reveal whether a phone number exists.
-      const code = await App.randomDigits(6);
-      const challengeId = window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${await App.randomDigits(6)}`;
-      const codeHash = await App.hashSecret(code);
-
-      await Database.putMeta('reset_challenge', {
-        phone,
-        challengeId,
-        codeHash,
-        expiresAt: Date.now() + 10 * 60 * 1000,
-        attempts: 0,
-        instructorUsername: instructor ? instructor.username : ''
-      });
-
-      sessionStorage.setItem('resetPhone', phone);
-      sessionStorage.setItem('resetChallengeId', challengeId);
-      document.getElementById('resetStep1').classList.add('hidden');
-      document.getElementById('resetStep2').classList.remove('hidden');
-
-      // In static mode this is intentionally shown for local/demo testing only.
-      App.showNotice('resetNotice',
-        `Demo recovery mode: your one-time code is ${code}. No SMS is sent in GitHub-only mode; use a server for real recovery.`,
-        'ok');
-      return;
-    }
-
-    try {
-      const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Request failed.');
-
-      App.showNotice('resetNotice',
-        'A one-time verification code was sent by the configured recovery provider. Do not share that code.',
-        'ok');
-      sessionStorage.setItem('resetPhone', phone);
-      sessionStorage.setItem('resetChallengeId', data.challengeId || '');
-      document.getElementById('resetStep1').classList.add('hidden');
-      document.getElementById('resetStep2').classList.remove('hidden');
-    } catch (err) {
-      App.resetFailures += 1;
-      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
-      App.showNotice('resetNotice', err.message || 'Password recovery is temporarily unavailable.', 'warn');
-    }
-  }
-
-  static async submitPasswordReset() {
-    const phone = App.normalizePhilippinePhone(document.getElementById('resetPhone').value.trim());
-    const code = document.getElementById('smsCodeInput').value.trim();
-    const newPassword = document.getElementById('newPasswordInput').value;
-
-    if (Date.now() < App.resetLockedUntil) {
-      App.showNotice('resetNotice', 'Too many reset attempts. Try again in one minute.', 'bad');
-      return;
-    }
-
-    if (!phone || !/^\d{6}$/.test(code) ||
-        newPassword.length < 10 || newPassword.length > 128 ||
-        !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      App.resetFailures += 1;
-      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
-      App.showNotice('resetNotice',
-        'Enter the six-digit code and a password of 10–128 characters with uppercase, lowercase, and a number.',
-        'bad');
-      return;
-    }
-
-    if (!CONFIG.REMOTE_API_ENABLED) {
-      const challengeRecord = await Database.getMeta('reset_challenge');
-      const challenge = challengeRecord && challengeRecord.value;
-      const challengeId = sessionStorage.getItem('resetChallengeId') || '';
-
-      if (!challenge || challenge.challengeId !== challengeId ||
-          challenge.phone !== phone || Date.now() > challenge.expiresAt) {
-        App.showNotice('resetNotice', 'The recovery code is invalid or expired. Request a new code.', 'bad');
-        return;
-      }
-
-      if ((challenge.attempts || 0) >= 5) {
-        App.resetLockedUntil = Date.now() + 60000;
-        App.showNotice('resetNotice', 'Too many invalid recovery attempts. Try again in one minute.', 'bad');
-        return;
-      }
-
-      const validCode = await App.verifySecret(code, challenge.codeHash);
-      if (!validCode) {
-        challenge.attempts = (challenge.attempts || 0) + 1;
-        await Database.putMeta('reset_challenge', challenge);
-        App.resetFailures += 1;
-        if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
-        App.showNotice('resetNotice', 'Invalid recovery code. Please try again or request a new code.', 'bad');
-        return;
-      }
-
-      if (!challenge.instructorUsername) {
-        // Keep account-existence information private while still allowing a clean demo flow.
-        App.showNotice('resetNotice', 'No instructor account is linked to that recovery number.', 'bad');
-        return;
-      }
-
-      const instructors = await App.getInstructors();
-      const instructor = instructors.find(i => i.username === challenge.instructorUsername && i.phone === phone);
-      if (!instructor || !instructor.active) {
-        App.showNotice('resetNotice', 'That instructor account is unavailable for recovery.', 'bad');
-        return;
-      }
-
-      instructor.passwordHash = await App.hashSecret(newPassword);
-      instructor.passwordChangedAt = new Date().toISOString();
-      await App.saveInstructors(instructors);
-      await Database.putMeta('reset_challenge', null);
-
-      App.resetFailures = 0;
-      App.showNotice('resetNotice', 'Password updated. Redirecting to login...', 'ok');
-
-      setTimeout(() => {
-        App.showForgotPassword(false);
-        document.getElementById('resetStep1').classList.remove('hidden');
-        document.getElementById('resetStep2').classList.add('hidden');
-        document.getElementById('resetNotice').replaceChildren();
-        document.getElementById('resetPhone').value = '';
-        document.getElementById('smsCodeInput').value = '';
-        document.getElementById('newPasswordInput').value = '';
-        sessionStorage.removeItem('resetPhone');
-        sessionStorage.removeItem('resetChallengeId');
-      }, 1200);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone,
-          code,
-          newPassword,
-          challengeId: sessionStorage.getItem('resetChallengeId') || ''
-        })
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Reset failed.');
-
-      App.resetFailures = 0;
-      App.showNotice('resetNotice', 'Password updated. Redirecting to login...', 'ok');
-
-      setTimeout(() => {
-        App.showForgotPassword(false);
-        document.getElementById('resetStep1').classList.remove('hidden');
-        document.getElementById('resetStep2').classList.add('hidden');
-        document.getElementById('resetNotice').replaceChildren();
-        sessionStorage.removeItem('resetPhone');
-        sessionStorage.removeItem('resetChallengeId');
-      }, 1200);
-    } catch (err) {
-      App.resetFailures += 1;
-      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
-      App.showNotice('resetNotice', err.message || 'Invalid recovery code. Please request a new code.', 'bad');
-    }
-  }
-
-  static armSessionTimeout() {
-    clearTimeout(App.sessionTimer);
-    if (!App.currentUser) return;
-    App.sessionTimer = setTimeout(() => {
-      if (!App.currentUser) return;
-      App.logoutInstructor();
-      Router.navigate('instructorView');
-      App.showNotice('authNotice','Your 30-minute security session expired. Please sign in again.','warn');
-    }, 30 * 60 * 1000);
-  }
-
-  static logoutInstructor() {
-    clearTimeout(App.sessionTimer);
-    App.sessionTimer = null;
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('authRole');
-    sessionStorage.removeItem('authUsername');
-    App.currentUser = null;
-    document.getElementById('instructorDesk').classList.add('hidden');
-    document.getElementById('instructorAuth').classList.remove('hidden');
-    document.getElementById('pinInput').value = '';
-  }
-
-  static async refreshDashboard() {
-    const token = sessionStorage.getItem('authToken');
-    let records = [];
-
-    if (token && token.startsWith(LOCAL_TOKEN_PREFIX)) {
-      App.setBackendStatus('Local browser storage');
-      records = await Database.getAllRecords();
-    } else if (token && CONFIG.REMOTE_API_ENABLED) {
-      try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance/today`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-            const remoteRecords = await response.json();
-            records = Array.isArray(remoteRecords) ? remoteRecords.map(r => ({
-              id: String(r.id || ''),
-              recordType: 'attendance',
-              studentId: String(r.student_id || '').slice(0, 32),
-              name: String(r.student_name || 'Unknown student').slice(0, 80),
-              subject: String(r.subject || 'Unassigned').slice(0, 80),
-              scheduleId: String(r.schedule_id || '').slice(0, 40),
-              scheduleLabel: String(r.schedule_label || '').slice(0, 80),
-              reason: String(r.reason || 'Not specified').slice(0, 80),
-              reporterRole: String(r.reporter_role || 'Student').slice(0, 50),
-              teacherStatus: String(r.teacher_status || 'Teacher present').slice(0, 50),
-              dateKey: String(r.date_key || ''),
-              timestamp: String(r.timestamp || ''),
-              status: ['present', 'late', 'absent'].includes(r.status) ? r.status : 'present',
-              flags: Array.isArray(r.flags) ? r.flags.slice(0, 10).map(flag => String(flag).slice(0, 40)) : []
-            })) : [];
-        }
-      } catch (e) {
-        console.warn("Unable to fetch remote records.", e);
-        App.setBackendStatus('Backend unavailable');
-        records = await Database.getAllRecords();
-      }
-    } else if (LOCAL_FALLBACK_ALLOWED) {
-      App.setBackendStatus('Local fallback');
-      records = await Database.getAllRecords();
-    } else {
-      App.setBackendStatus('Authentication required');
-    }
-
-    const today = App.getTodayKey();
-    const todayAllRecords = records.filter(r => r.dateKey === today || String(r.dateKey).startsWith(today));
-    const todayRecords = todayAllRecords.filter(r => r.recordType !== 'classroom_report');
-    const todayReports = todayAllRecords.filter(r => r.recordType === 'classroom_report');
-    const subjectSummary = {};
-    const reasonSummary = {};
-    let teacherAbsentCount = 0;
-    let thirdPartyReports = 0;
-
-    todayRecords.forEach(record => {
-      const subject = String(record.subject || 'Unassigned');
-      const reason = String(record.reason || 'Not specified');
-      if (!subjectSummary[subject]) subjectSummary[subject] = { present: 0, late: 0, absent: 0 };
-      if (record.status === 'present') subjectSummary[subject].present += 1;
-      if (record.status === 'late') subjectSummary[subject].late += 1;
-      if (record.status === 'absent') subjectSummary[subject].absent += 1;
-
-      if (!reasonSummary[reason]) reasonSummary[reason] = 0;
-      reasonSummary[reason] += 1;
-
-      if (String(record.teacherStatus || '').toLowerCase().includes('absent') || reason.toLowerCase().includes('teacher absent')) teacherAbsentCount += 1;
-      if (String(record.reporterRole || '').toLowerCase().includes('third-party') || String(record.reporterRole || '').toLowerCase().includes('teacher/substitute')) thirdPartyReports += 1;
-    });
-    teacherAbsentCount += todayReports.filter(report => String(report.teacherStatus || '').toLowerCase().includes('absent')).length;
-    thirdPartyReports += todayReports.filter(report => String(report.reporterRole || '').toLowerCase().includes('third-party')).length;
-
-    const strongestSubject = Object.entries(subjectSummary).sort((a, b) => {
-      const aScore = (a[1].present * 3) + (a[1].late * 1) - (a[1].absent * 4);
-      const bScore = (b[1].present * 3) + (b[1].late * 1) - (b[1].absent * 4);
-      return bScore - aScore;
-    })[0];
-    const weakestSubject = Object.entries(subjectSummary).sort((a, b) => {
-      const aScore = (a[1].present * 3) + (a[1].late * 1) - (a[1].absent * 4);
-      const bScore = (b[1].present * 3) + (b[1].late * 1) - (b[1].absent * 4);
-      return aScore - bScore;
-    })[0];
-    const topReason = Object.entries(reasonSummary).sort((a, b) => b[1] - a[1])[0];
-
-    const strengthElement = document.getElementById('strengthSummary');
-    const weaknessElement = document.getElementById('weaknessSummary');
-    const mainReasonElement = document.getElementById('mainReason');
-
-    if (strengthElement) strengthElement.textContent = strongestSubject ? `${strongestSubject[0]} is strongest` : 'No subject data yet';
-    if (weaknessElement) weaknessElement.textContent = weakestSubject ? `${weakestSubject[0]} needs improvement` : 'No weak subject identified';
-    if (mainReasonElement) mainReasonElement.textContent = topReason ? `${topReason[0]} (${topReason[1]} record${topReason[1] > 1 ? 's' : ''})` : '--';
-
-    const subjectChart = document.getElementById('subjectChart');
-    if (subjectChart) {
-      subjectChart.replaceChildren();
-      const subjectEntries = Object.entries(subjectSummary).sort((a, b) => (b[1].present + b[1].late) - (a[1].present + a[1].late));
-      if (!subjectEntries.length) {
-        const empty = document.createElement('div');
-        empty.className = 'label';
-        empty.textContent = 'No subject records yet.';
-        subjectChart.appendChild(empty);
-      } else {
-        subjectEntries.forEach(([subject, summary]) => {
-          const row = document.createElement('div');
-          row.className = 'bar-row';
-          const label = document.createElement('span');
-          label.textContent = subject;
-          const track = document.createElement('div');
-          track.className = 'bar-track';
-          const fill = document.createElement('div');
-          const attendanceTotal = summary.present + summary.late + summary.absent;
-          const rate = Math.round(((summary.present + summary.late) / Math.max(attendanceTotal, 1)) * 100);
-          fill.className = `bar-fill${rate < 50 ? ' bad' : rate < 80 ? ' warn' : ''}`;
-          fill.style.width = `${rate}%`;
-          track.appendChild(fill);
-          const value = document.createElement('strong');
-          value.textContent = `${rate}%`;
-          row.append(label, track, value);
-          subjectChart.appendChild(row);
-        });
-      }
-    }
-
-    const studentSummary = document.getElementById('studentSummary');
-    if (studentSummary) {
-      studentSummary.replaceChildren();
-      const students = {};
-      todayRecords.forEach(record => {
-        const key = `${record.studentId}|${record.name}`;
-        if (!students[key]) students[key] = { name: record.name, id: record.studentId, present: 0, late: 0, absent: 0, reasons: [] };
-        students[key][record.status] += 1;
-        if (record.status === 'absent' && record.reason) students[key].reasons.push(record.reason);
-      });
-      const studentEntries = Object.values(students).sort((a, b) => (b.absent * 4 + b.late) - (a.absent * 4 + a.late)).slice(0, 8);
-      if (!studentEntries.length) {
-        const empty = document.createElement('div');
-        empty.className = 'label';
-        empty.textContent = 'No student records yet.';
-        studentSummary.appendChild(empty);
-      } else {
-        const table = document.createElement('table');
-        table.className = 'summary-table';
-        table.innerHTML = '<thead><tr><th>Student</th><th>P</th><th>L</th><th>A</th><th>Note</th></tr></thead>';
-        const body = document.createElement('tbody');
-        studentEntries.forEach(student => {
-          const row = document.createElement('tr');
-          const note = student.reasons[0] || (student.late ? 'Late arrival' : 'Stable');
-          [student.name, student.present, student.late, student.absent, note].forEach(value => {
-            const cell = document.createElement('td');
-            cell.textContent = String(value);
-            row.appendChild(cell);
-          });
-          body.appendChild(row);
-        });
-        table.appendChild(body);
-        studentSummary.appendChild(table);
-      }
-    }
-
-    document.getElementById('statTotal').textContent = todayRecords.length;
-    document.getElementById('statPresent').textContent = todayRecords.filter(r => r.status === 'present').length;
-    document.getElementById('statLate').textContent = todayRecords.filter(r => r.status === 'late').length;
-    document.getElementById('statFlags').textContent = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
-
-    const totalCount = todayRecords.length || 1;
-    const presentCount = todayRecords.filter(r => r.status === 'present').length;
-    const lateCount = todayRecords.filter(r => r.status === 'late').length;
-    const absentCount = todayRecords.filter(r => r.status === 'absent').length;
-    const flaggedCount = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
-    const presenceRate = Math.round((presentCount / totalCount) * 100);
-    const riskIndex = Math.min(100, Math.round(((lateCount * 25) + (absentCount * 22) + (flaggedCount * 15) + (teacherAbsentCount * 18) + (thirdPartyReports * 10)) / Math.max(totalCount, 1) * 100));
-    const verificationScore = Math.max(60, 100 - riskIndex);
-
-    const presenceMeter = document.getElementById('presenceMeter');
-    const riskMeter = document.getElementById('riskMeter');
-    const verificationMeter = document.getElementById('verificationMeter');
-    const presenceRateEl = document.getElementById('presenceRate');
-    const riskIndexEl = document.getElementById('riskIndex');
-    const verificationScoreEl = document.getElementById('verificationScore');
-
-    if (presenceMeter) presenceMeter.style.width = `${presenceRate}%`;
-    if (riskMeter) riskMeter.style.width = `${riskIndex}%`;
-    if (verificationMeter) verificationMeter.style.width = `${verificationScore}%`;
-    if (presenceRateEl) presenceRateEl.textContent = `${presenceRate}%`;
-    if (riskIndexEl) riskIndexEl.textContent = `${riskIndex}%`;
-    if (verificationScoreEl) verificationScoreEl.textContent = `${verificationScore}%`;
-
-    const insightValue = document.getElementById('aiInsightValue');
-    const insightText = document.getElementById('aiInsightText');
-    if (insightValue && insightText) {
-      insightValue.textContent = riskIndex < 35 ? 'Stable' : riskIndex < 60 ? 'Watch' : 'Critical';
-      const recommendation = strongestSubject && weakestSubject
-        ? `Focus on ${weakestSubject[0]} because it is the weakest subject, while ${strongestSubject[0]} remains the strongest.`
-        : 'Attendance flow is stable.';
-      insightText.textContent = riskIndex < 35 ? `Strong performance: ${strongestSubject ? strongestSubject[0] : 'the class'} is leading the day.` : riskIndex < 60 ? recommendation : `Multiple exceptions are rising. ${recommendation}`;
-    }
-
-    const board = document.getElementById('attendanceBoard');
-    const coverageBoard = document.getElementById('coverageBoard');
-    board.replaceChildren();
-
-    if (todayRecords.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'label';
-      empty.textContent = 'No records logged for today.';
-      board.appendChild(empty);
-      if (!coverageBoard) return;
-    }
-
-    todayRecords.forEach(r => {
-      const item = document.createElement('div');
-      item.className = 'item';
-      const details = document.createElement('div');
-      const identity = document.createElement('strong');
-      identity.textContent = `${String(r.name).slice(0, 80)} (${String(r.studentId).slice(0, 32)})`;
-      const time = document.createElement('div');
-      time.className = 'label';
-      const recordedTime = Number.isNaN(new Date(r.timestamp).getTime()) ? 'Unknown time' : new Date(r.timestamp).toLocaleTimeString();
-      time.textContent = `${r.scheduleLabel || r.subject || 'Unscheduled'} • ${recordedTime}`;
-      details.append(identity, time);
-      const badge = document.createElement('span');
-      badge.className = `badge ${r.status === 'late' ? 'late' : 'present'}`;
-      badge.textContent = r.status === 'late' ? 'late' : 'present';
-      item.append(details, badge);
-      board.appendChild(item);
-    });
-
-    if (coverageBoard) {
-      coverageBoard.replaceChildren();
-      if (!todayReports.length) {
-        const emptyReport = document.createElement('div');
-        emptyReport.className = 'label';
-        emptyReport.textContent = 'No classroom coverage reports for today.';
-        coverageBoard.appendChild(emptyReport);
-      } else {
-        todayReports.slice().reverse().forEach(report => {
-          const item = document.createElement('div');
-          item.className = 'item';
-          const details = document.createElement('div');
-          const title = document.createElement('strong');
-          title.textContent = `${report.subject || 'Unassigned'} • ${report.teacherStatus || 'Coverage reported'}`;
-          const note = document.createElement('div');
-          note.className = 'label';
-          note.textContent = `${report.reason || 'No reason'} • ${report.reporterRole || 'Unknown reporter'}${report.name && report.name !== 'Classroom coverage report' ? ` • ${report.name}` : ''}`;
-          details.append(title, note);
-          const badge = document.createElement('span');
-          badge.className = `badge ${String(report.teacherStatus).toLowerCase().includes('absent') ? 'flagged' : 'late'}`;
-          badge.textContent = 'coverage';
-          item.append(details, badge);
-          coverageBoard.appendChild(item);
-        });
-      }
-    }
-  }
-
-  static async logClassroomReport() {
-    const subject = document.getElementById('coverageSubject').value;
-    const teacherStatus = document.getElementById('coverageStatus').value;
-    const reason = document.getElementById('coverageReason').value;
-    const reporterRole = document.getElementById('coverageReporter').value;
-    const note = document.getElementById('coverageNote').value.trim();
-
-    try {
-      await Database.putRecord({
-        id: window.crypto.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${await App.randomDigits(6)}`,
-        recordType: 'classroom_report',
-        studentId: 'CLASSROOM',
-        name: note || 'Classroom coverage report',
-        subject,
-        reason,
-        reporterRole,
-        teacherStatus,
-        dateKey: App.getTodayKey(),
-        timestamp: new Date().toISOString(),
-        status: 'report',
-        flags: [teacherStatus === 'Teacher absent' ? 'TEACHER_ABSENT' : 'COVERAGE_REPORTED']
-      });
-      App.showNotice('coverageNotice', 'Classroom coverage report saved and excluded from student attendance totals.', 'ok');
-      document.getElementById('coverageNote').value = '';
-      await App.refreshDashboard();
-    } catch (error) {
-      App.showNotice('coverageNotice', 'Coverage report could not be saved locally. Try again.', 'bad');
-    }
+  static copyAccessUrl() {
+    navigator.clipboard.writeText(window.location.href);
+    alert('Website URL copied to clipboard!');
   }
 
   static async exportDataset(format) {
     const records = await Database.getAllRecords();
-    if (format === 'json') {
-      const exportable = records.map(r => ({ ...r, photo: undefined }));
-      const blob = new Blob([JSON.stringify(exportable, null, 2)], { type: 'application/json' });
-      App.triggerDownload(blob, `attendance_${App.getTodayKey()}.json`);
-    } else if (format === 'csv') {
-      const headers = ['ID', 'Type', 'Student ID', 'Name', 'Subject', 'Schedule', 'Reason', 'Reporter', 'Teacher Status', 'Date', 'Timestamp', 'Status'];
-          const escapeCsv = value => {
-            const text = String(value ?? '');
-            const safeText = /^[=+-@]/.test(text) ? `'${text}` : text;
-            return `"${safeText.replace(/"/g, '""')}"`;
-          };
-          const rows = records.map(r => [r.id, r.recordType || 'attendance', r.studentId, r.name, r.subject || '', r.scheduleLabel || '', r.reason || '', r.reporterRole || '', r.teacherStatus || '', r.dateKey, r.timestamp, r.status].map(escapeCsv));
-      const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      App.triggerDownload(blob, `attendance_${App.getTodayKey()}.csv`);
-    }
-  }
-
-  static triggerDownload(blob, filename) {
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([JSON.stringify(records, null, 2)], { type: format === 'json' ? 'application/json' : 'text/csv' });
     const a = document.createElement('a');
-    a.href = url;
-    a.download = String(filename || 'download').replace(/[\\/:*?"<>|]+/g, '_');
-    a.rel = 'noopener';
-    document.body.appendChild(a);
+    a.href = URL.createObjectURL(blob);
+    a.download = `attendance_export_${App.getTodayKey()}.${format}`;
     a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   static async purgeDatabase() {
-    if (!App.currentUser || App.currentUser.role !== 'admin') {
-      App.showNotice('authNotice', 'Administrator access is required to purge local data.', 'bad');
-      return;
-    }
-    if (!confirm("Are you sure you want to purge all stored local database records?")) return;
-    try {
+    if (confirm("Are you sure you want to purge all local records? This cannot be undone.")) {
       await Database.clearAll();
-      await App.syncSession();
-      await App.loadSchedule();
-      await App.loadSubjects();
-      App.renderSubjectControls();
-      App.renderSubjectCatalog();
-      App.renderSchedule();
-      App.renderScheduleManager();
-      await App.refreshDashboard();
-      App.showNotice('homeNotice', 'Local database cache purged successfully.', 'ok');
-    } catch (error) {
-      console.error('Purge failed:', error);
-      App.showNotice('homeNotice', 'The local database could not be cleared. Please close other tabs and try again.', 'bad');
+      await App.init();
     }
   }
 }
 
-// Lightweight runtime error guard: catches unexpected failures without exposing secrets.
-(function installRuntimeGuard() {
-  const showRuntimeError = (message) => {
-    console.error(message);
-    let box = document.getElementById('runtimeGuard');
-    if (!box) {
-      box = document.createElement('div');
-      box.id = 'runtimeGuard';
-      box.setAttribute('role', 'alert');
-      Object.assign(box.style, {
-        position: 'fixed', left: '12px', right: '12px', bottom: '12px', zIndex: '2000',
-        padding: '12px 14px', borderRadius: '12px', background: '#fef2f2',
-        color: '#991b1b', border: '1px solid #fecaca', boxShadow: '0 12px 30px rgba(15,23,42,.14)',
-        font: '600 14px system-ui, sans-serif'
-      });
-      document.body.appendChild(box);
-    }
-    box.textContent = 'Something went wrong. Your saved local data was not intentionally deleted. Please retry the action.';
-    clearTimeout(window.__bitctRuntimeGuardTimer);
-    window.__bitctRuntimeGuardTimer = setTimeout(() => box.remove(), 7000);
-  };
-  window.addEventListener('error', event => showRuntimeError(event.error || event.message || 'Unexpected error'));
-  window.addEventListener('unhandledrejection', event => showRuntimeError(event.reason || 'Unexpected asynchronous error'));
-})();
-
-// Lifecycle Initialization Engine
-window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    await App.init();
-  } catch (error) {
-    console.error('Application initialization failed:', error);
-    App.showNotice('homeNotice', 'The app could not finish loading its local database. Refresh the page and try again.', 'bad');
-  }
-});
+window.addEventListener('DOMContentLoaded', () => App.init());
 </script>
-
-  <div id="securityModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="securityModalTitle" aria-hidden="true">
-    <div class="app-modal">
-      <div class="modal-head">
-        <div><div class="label">ACCOUNT SECURITY</div><h3 id="securityModalTitle">Change password</h3></div>
-        <button type="button" class="modal-close" aria-label="Close" onclick="App.closeSecurityModal()">×</button>
-      </div>
-      <div id="securityModalNotice"></div>
-      <form id="changePasswordForm" autocomplete="off">
-        <div class="field password-field">
-          <label for="currentPasswordInput">Current password</label>
-          <input id="currentPasswordInput" type="password" maxlength="128" autocomplete="current-password" required>
-          <button type="button" class="password-toggle" onclick="App.togglePassword('currentPasswordInput', this)">Show</button>
-        </div>
-        <div class="field password-field">
-          <label for="changePasswordInput">New password</label>
-          <input id="changePasswordInput" type="password" maxlength="128" autocomplete="new-password" required>
-          <button type="button" class="password-toggle" onclick="App.togglePassword('changePasswordInput', this)">Show</button>
-        </div>
-        <div class="password-meter" aria-hidden="true"><span id="changePasswordMeter"></span></div>
-        <div id="changePasswordFeedback" class="password-feedback">Use 10–128 characters with uppercase, lowercase, and a number.</div>
-        <div class="field password-field">
-          <label for="confirmPasswordInput">Confirm new password</label>
-          <input id="confirmPasswordInput" type="password" maxlength="128" autocomplete="new-password" required>
-          <button type="button" class="password-toggle" onclick="App.togglePassword('confirmPasswordInput', this)">Show</button>
-        </div>
-        <p class="security-note">Changing your password signs out this local session after the password is saved. For a public deployment, password enforcement and recovery should be performed by your server, not only in browser storage.</p>
-        <div class="modal-actions">
-          <button type="button" class="btn ghost" onclick="App.closeSecurityModal()">Cancel</button>
-          <button type="submit" class="btn primary">Update password</button>
-        </div>
-      </form>
-    </div>
-  </div>
 </body>
-  
 </html>
-
-  
-BITCT_Carrot_Attendance_Upgraded.html
-HTML
-You’ve reached your data analysis limit. Upgrade to ChatGPT Go or try again tomorrow after 2:28 PM.
-Upgrade to Go
