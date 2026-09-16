@@ -6,41 +6,94 @@ export default async function handler(req, res) {
     });
   }
 
-  const { phone } = req.body;
-
-  if (!phone) {
-    return res.status(400).json({
-      success: false,
-      message: "Phone number is required"
-    });
-  }
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
   try {
-    const response = await fetch(
-      "https://api.semaphore.co/api/v4/messages",
+    const { phone } = req.body || {};
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required"
+      });
+    }
+
+    // Normalize Philippine numbers
+    let normalizedPhone = String(phone).replace(/[\s()-]/g, "");
+
+    if (normalizedPhone.startsWith("09")) {
+      normalizedPhone = "63" + normalizedPhone.substring(1);
+    } else if (normalizedPhone.startsWith("+63")) {
+      normalizedPhone = normalizedPhone.substring(1);
+    }
+
+    if (!/^639\d{9}$/.test(normalizedPhone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Philippine mobile number"
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    /*
+      Send the OTP through Semaphore's dedicated OTP endpoint.
+      The API key NEVER appears in this GitHub code.
+    */
+    const smsResponse = await fetch(
+      "https://api.semaphore.co/api/v4/otp",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
+        body: new URLSearchParams({
           apikey: process.env.SEMAPHORE_API_KEY,
-          number: phone,
-          message: `Your password reset code is ${otp}. It expires soon.`
+          number: normalizedPhone,
+          message: "Your password reset code is {otp}. It expires in 5 minutes.",
+          code: otp
         })
       }
     );
 
-    const result = await response.json();
+    const smsResult = await smsResponse.json();
 
-    if (!response.ok) {
-      console.error(result);
+    if (!smsResponse.ok) {
+      console.error("Semaphore error:", smsResult);
+
+      return res.status(502).json({
+        success: false,
+        message: "SMS provider failed to send the OTP"
+      });
+    }
+
+    /*
+      Store OTP in Upstash Redis.
+
+      IMPORTANT:
+      We store the OTP using the server-side Redis credentials.
+      The browser never receives the OTP.
+    */
+
+    const redisKey = `password-reset:${normalizedPhone}`;
+
+    const redisResponse = await fetch(
+      `${process.env.UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(redisKey)}/${otp}/EX/300`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`
+        }
+      }
+    );
+
+    const redisResult = await redisResponse.json();
+
+    if (!redisResponse.ok || redisResult.result !== "OK") {
+      console.error("Redis error:", redisResult);
 
       return res.status(500).json({
         success: false,
-        message: "Failed to send SMS"
+        message: "Could not save OTP"
       });
     }
 
@@ -50,11 +103,11 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Forgot password error:", error);
 
     return res.status(500).json({
       success: false,
-      message: "SMS service error"
+      message: "Server error"
     });
   }
 }
