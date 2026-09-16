@@ -66,6 +66,16 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .subject-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 .subject-chip { display:inline-flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid rgba(109,40,217,.15); border-radius:999px; background:#faf5ff; color:#5b21b6; font-size:.78rem; font-weight:700; }
 .subject-chip::before { content:'●'; font-size:.55rem; }
+.subject-catalog-toolbar { display:flex; align-items:center; gap:10px; margin-top:12px; }
+.subject-catalog-toolbar input { flex:1; min-width:0; padding:9px 11px; border:1px solid var(--line); border-radius:9px; background:#fff; }
+.subject-catalog-toolbar input:focus { outline:2px solid var(--primary); border-color:transparent; }
+.subject-count { flex:0 0 auto; color:var(--muted); font-size:.76rem; font-weight:700; }
+.subject-chip { position:relative; }
+.subject-chip.custom { padding-right:7px; }
+.subject-remove { width:24px; min-height:24px; height:24px; padding:0; border:0; border-radius:50%; background:rgba(91,33,182,.08); color:#5b21b6; font-weight:800; line-height:1; }
+.subject-remove:hover { background:#fee2e2; color:#991b1b; }
+.subject-empty { width:100%; color:var(--muted); font-size:.8rem; padding:8px 2px; }
+@media(max-width:520px){ .subject-catalog-toolbar { align-items:stretch; flex-direction:column; } .subject-count { align-self:flex-start; } }
 .helper-text { color:var(--muted); font-size:.78rem; line-height:1.5; margin:6px 0 0; }
 @media(max-width:520px){ .subject-tools{grid-template-columns:1fr;} .subject-tools .btn{width:100%;} }
 
@@ -212,8 +222,25 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   .mini-stat { padding: 10px; }
   .mini-stat strong { font-size: 1.05rem; overflow-wrap: anywhere; }
 }
+
+/* ===== Command-center quality layer ===== */
+.account-security-card{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,#fff,#fbfaff);margin:0 0 16px}
+.account-security-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.security-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:#f5f3ff;color:#5b21b6;font-size:.74rem;font-weight:800}
+.security-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.modal-backdrop{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.45);backdrop-filter:blur(8px)}
+.modal-backdrop.open{display:flex;animation:fadeIn .16s ease-out}
+.app-modal{width:min(520px,100%);max-height:min(90vh,720px);overflow:auto;background:#fff;border:1px solid rgba(148,163,184,.3);border-radius:18px;box-shadow:0 24px 80px rgba(15,23,42,.25);padding:20px}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.modal-head h3{margin:0}.modal-close{width:36px;height:36px;padding:0;border:0;border-radius:10px;background:#f1f5f9;font-size:20px;cursor:pointer}
+.password-field{position:relative}.password-field input{padding-right:74px}.password-toggle{position:absolute;right:7px;bottom:7px;border:0;background:#f8fafc;border-radius:7px;padding:6px 8px;color:#475569;font-weight:700;cursor:pointer}
+.password-meter{height:7px;border-radius:999px;background:#e2e8f0;overflow:hidden;margin-top:8px}.password-meter>span{display:block;height:100%;width:0;transition:width .2s ease}
+.password-feedback{font-size:.76rem;color:var(--muted);margin-top:5px;min-height:18px}
+.security-note{font-size:.78rem;color:var(--muted);line-height:1.45}.modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+.instructor-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}.instructor-toolbar input{min-width:220px;flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:9px}
+@media(max-width:650px){.account-security-card{grid-template-columns:1fr}.security-actions{justify-content:stretch}.security-actions .btn{flex:1}.app-modal{padding:16px}.instructor-toolbar input{min-width:100%}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 <style>
 .qr-modal { position:fixed; inset:0; background:rgba(15,23,42,.58); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000; }
 .qr-modal.open { display:flex; }
@@ -342,7 +369,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       <div class="form">
         <h2>Student Attendance Registration</h2>
         <div id="studentNotice"></div>
-        
+
         <form id="checkinForm" onsubmit="App.handleCheckIn(event)">
           <div class="accordion-stack">
             <details class="compact-section" open>
@@ -427,7 +454,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
               <option value="">Select a scheduled period</option>
             </select>
           </div>
-          
+
               </div>
             </details>
             <details class="compact-section">
@@ -479,7 +506,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       <div id="forgotPasswordForm" class="form hidden">
         <h2>Reset Instructor Password</h2>
         <div id="resetNotice"></div>
-        
+
         <!-- Step 1: Send Code -->
         <div id="resetStep1">
           <p class="otp-help">Enter the Philippine mobile number registered to the instructor account. In remote mode, the server sends a 6-digit one-time password by SMS. Never put an SMS-provider secret in this GitHub file.</p>
@@ -509,6 +536,20 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 
       <!-- 3. COMMAND CENTER -->
       <div id="instructorDesk" class="hidden">
+        <div class="account-security-card" id="accountSecurityCard">
+          <div>
+            <div class="label">ACCOUNT SECURITY</div>
+            <h3 id="signedInName" style="margin:3px 0 0;">Signed in</h3>
+            <div class="account-security-meta">
+              <span class="security-badge" id="signedInRole">Account</span>
+              <span class="security-badge">Session protected</span>
+              <span class="security-badge" id="passwordAgeBadge">Password status</span>
+            </div>
+          </div>
+          <div class="security-actions">
+            <button type="button" class="btn ghost" onclick="App.openChangePassword()">Change my password</button>
+          </div>
+        </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
           <h2>Instructor Command Center</h2>
           <div>
@@ -615,11 +656,16 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             <div class="subject-tools">
               <div class="field" style="margin:0;">
                 <label for="newSubjectName">New subject</label>
-                <input id="newSubjectName" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Database Management">
+                <input id="newSubjectName" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Database Management" aria-describedby="subjectHelp">
               </div>
-              <button type="button" class="btn primary" onclick="App.addSubject()">Add Subject</button>
+              <button type="button" class="btn primary" onclick="App.addSubject()">+ Add Subject</button>
             </div>
-            <div id="subjectList" class="subject-list"></div>
+            <p id="subjectHelp" class="helper-text">Press Enter to add quickly. New subjects are immediately available in student check-in, coverage, and schedules.</p>
+            <div class="subject-catalog-toolbar">
+              <input id="subjectSearch" type="search" maxlength="80" autocomplete="off" placeholder="Search subjects..." aria-label="Search subjects">
+              <span id="subjectCount" class="subject-count">0 subjects</span>
+            </div>
+            <div id="subjectList" class="subject-list" aria-live="polite"></div>
           </div>
           <div id="scheduleManager" class="schedule-list" style="margin-top:16px;"></div>
         </div>
@@ -660,18 +706,18 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           </div>
           <div id="coverageBoard" class="list" style="margin-top:16px;"></div>
         </div>
-      </div>            </div>
+      </div>
           </details>
         <div id="adminManagementPanel" class="card hidden" style="margin-bottom:16px;">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
             <div>
               <h3>Admin • Instructor Management</h3>
-              <p class="label">Create, activate, deactivate, and manage instructor accounts on this device.</p>
+              <p class="label">Create, activate, deactivate, reset passwords, and manage instructor accounts on this device.</p>
             </div>
             <span class="badge present">ADMIN ONLY</span>
           </div>
           <div id="instructorManagementNotice"></div>
-          <form id="addInstructorForm" class="report-form" style="margin-top:14px;">
+          <form id="addInstructorForm" class="report-form" autocomplete="off" autocomplete="off" style="margin-top:14px;">
             <div class="field">
               <label for="newInstructorName">Full name</label>
               <input id="newInstructorName" type="text" maxlength="80" placeholder="e.g. Maria Santos" required>
@@ -694,10 +740,15 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             </div>
             <button class="btn primary" type="submit">Add Instructor</button>
           </form>
+          <div class="instructor-toolbar">
+            <input id="instructorSearch" type="search" maxlength="80" placeholder="Search instructor or username..." aria-label="Search instructors">
+            <span id="instructorCount" class="subject-count">0 instructors</span>
+          </div>
           <div id="instructorList" class="list" style="margin-top:14px;"></div>
         </div>
 
         </div>
+      </div>
     </section>
 
   </div>
@@ -741,7 +792,7 @@ const CONFIG = Object.freeze({
   lateThresholdMins: 15,
   // GitHub Pages is static hosting: no /api server exists unless you explicitly add one.
   // Set this to your deployed backend URL when real SMS OTP is enabled.
-  // Example: 'https://your-api.example.com'
+  // Example: '[https\://your-api.example.com]\(https\://your-api.example.com)'
   API_BASE_URL: '',
   QR_SIZE: 240
 });
@@ -797,7 +848,8 @@ class Database {
       const store = tx.objectStore(storeName);
       const request = callback(store);
       tx.oncomplete = () => resolve(request ? request.result : null);
-      tx.onerror = () => reject(tx.error);
+      tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
+      tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
     });
   }
 
@@ -851,6 +903,8 @@ class App {
   static resetFailures = 0;
   static resetLockedUntil = 0;
   static currentUser = null;
+  static passwordChangeTarget = null;
+  static sessionTimer = null;
 
   static async hashSecret(secret, saltHex = null) {
     if (!window.crypto || !window.crypto.subtle) {
@@ -925,9 +979,24 @@ class App {
     document.addEventListener('keydown', event => { if (event.key === 'Escape') App.closeAccessQR(); });
     window.addEventListener('offline', App.updateConnectionState);
     setInterval(App.updateClockDisplay, 30000);
-    
+
     const addInstructorForm = document.getElementById('addInstructorForm');
     if (addInstructorForm) addInstructorForm.addEventListener('submit', App.addInstructor);
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) changePasswordForm.addEventListener('submit', App.submitChangePassword);
+    document.getElementById('changePasswordInput')?.addEventListener('input', App.updatePasswordMeter);
+    document.getElementById('instructorSearch')?.addEventListener('input', () => App.renderInstructorManagement());
+    document.getElementById('securityModal')?.addEventListener('click', event => { if (event.target.id === 'securityModal') App.closeSecurityModal(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') App.closeSecurityModal(); });
+    window.addEventListener('pagehide', () => App.stopCamera());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) App.stopCamera(); });
+
+    const subjectInput = document.getElementById('newSubjectName');
+    if (subjectInput) subjectInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); App.addSubject(); }
+    });
+    const subjectSearch = document.getElementById('subjectSearch');
+    if (subjectSearch) subjectSearch.addEventListener('input', () => App.renderSubjectCatalog());
 
     // Never trust role/identity values from sessionStorage alone. A public page can be inspected and edited.
     // The server must validate the token before granting protected API access.
@@ -937,7 +1006,7 @@ class App {
       sessionStorage.removeItem('authUsername');
     App.currentUser = null;
     }
-    
+
     await App.refreshDashboard();
   }
 
@@ -983,7 +1052,7 @@ class App {
   }
 
   static normalizeSubject(value) {
-    return String(value || '').replace(/\\s+/g, ' ').trim().slice(0, 80);
+    return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
   }
 
   static async loadSubjects() {
@@ -1069,13 +1138,61 @@ class App {
   static renderSubjectCatalog() {
     const list = document.getElementById('subjectList');
     if (!list) return;
+    const search = document.getElementById('subjectSearch')?.value.trim().toLowerCase() || '';
+    const visible = App.subjects.filter(subject => subject.toLowerCase().includes(search));
+    const count = document.getElementById('subjectCount');
+    if (count) count.textContent = `${App.subjects.length} subject${App.subjects.length === 1 ? '' : 's'}`;
     list.replaceChildren();
-    App.subjects.forEach(subject => {
+    if (!visible.length) {
+      const empty = document.createElement('div');
+      empty.className = 'subject-empty';
+      empty.textContent = search ? `No subjects match “${search}”.` : 'No subjects available yet.';
+      list.appendChild(empty);
+      return;
+    }
+    visible.forEach(subject => {
       const chip = document.createElement('span');
-      chip.className = 'subject-chip';
-      chip.textContent = subject;
+      const isDefault = DEFAULT_SUBJECTS.some(item => item.toLowerCase() === subject.toLowerCase());
+      chip.className = `subject-chip${isDefault ? '' : ' custom'}`;
+      chip.title = isDefault ? 'Built-in subject' : 'Custom subject';
+      const label = document.createElement('span');
+      label.textContent = subject;
+      chip.appendChild(label);
+      if (!isDefault) {
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'subject-remove';
+        remove.textContent = '×';
+        remove.title = `Remove ${subject}`;
+        remove.setAttribute('aria-label', `Remove ${subject}`);
+        remove.onclick = () => App.removeSubject(subject);
+        chip.appendChild(remove);
+      }
       list.appendChild(chip);
     });
+  }
+
+  static async removeSubject(subject) {
+    if (!App.currentUser || !['admin', 'instructor'].includes(App.currentUser.role)) {
+      App.showNotice('subjectNotice', 'Unlock the Instructor Desk to manage subjects.', 'bad');
+      return;
+    }
+    const normalized = App.normalizeSubject(subject);
+    if (DEFAULT_SUBJECTS.some(item => item.toLowerCase() === normalized.toLowerCase())) {
+      App.showNotice('subjectNotice', 'Built-in subjects cannot be removed. You can still add your own subjects.', 'warn');
+      return;
+    }
+    const inUse = App.schedule.some(slot => slot.subject.toLowerCase() === normalized.toLowerCase());
+    if (inUse) {
+      App.showNotice('subjectNotice', `${normalized} is used by a class period. Edit that period before removing the subject.`, 'warn');
+      return;
+    }
+    if (!confirm(`Remove “${normalized}” from the subject catalog?`)) return;
+    App.subjects = App.subjects.filter(item => item.toLowerCase() !== normalized.toLowerCase());
+    await Database.putMeta('subject_catalog', App.subjects);
+    App.renderSubjectControls();
+    App.renderSubjectCatalog();
+    App.showNotice('subjectNotice', `${normalized} was removed from the catalog.`, 'ok');
   }
 
   static getScheduleSlot(id) {
@@ -1317,11 +1434,20 @@ class App {
         return remoteSession;
       }
     } catch (error) {
-      console.warn('Shared session API unavailable; using local session.', error);
+      console.warn('Shared session API unavailable.', error);
+      App.setBackendStatus('Cloud unavailable');
+      if (CONFIG.REMOTE_API_ENABLED) {
+        const home = document.getElementById('homeCode');
+        const desk = document.getElementById('deskSessionCode');
+        if (home) home.textContent = '------';
+        if (desk) desk.textContent = '--';
+        return null;
+      }
     }
+    if (CONFIG.REMOTE_API_ENABLED) return null;
     let session = await Database.getMeta('current_session');
     const today = App.getTodayKey();
-    
+
     if (!session || !session.value || session.value.date !== today) {
       const randomCode = await App.randomDigits(6);
       session = {
@@ -1330,7 +1456,7 @@ class App {
       };
       await Database.putMeta('current_session', session.value);
     }
-    
+
     document.getElementById('homeCode').textContent = session.value.code;
     document.getElementById('deskSessionCode').textContent = session.value.code;
     App.updateClockDisplay();
@@ -1338,21 +1464,25 @@ class App {
   }
 
   static async generateNewSession() {
-    if (!sessionStorage.getItem('authToken')) {
-      App.showNotice('homeNotice', 'Only an authenticated instructor can refresh the session passcode.', 'bad');
+    if (!App.currentUser || !['admin','instructor'].includes(App.currentUser.role)) {
+      App.showNotice('homeNotice', 'Only an authenticated instructor or administrator can refresh the session passcode.', 'bad');
       return;
     }
-    if (CONFIG.REMOTE_API_ENABLED) try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/api/session`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` }
-      });
-      if (response.ok) {
+    if (CONFIG.REMOTE_API_ENABLED) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/session`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${sessionStorage.getItem('authToken') || ''}` }
+        });
+        if (!response.ok) throw new Error('The shared session service rejected the request.');
         await App.syncSession();
         return;
+      } catch (error) {
+        console.warn('Shared session API unavailable; passcode was not changed.', error);
+        App.setBackendStatus('Cloud unavailable');
+        App.showNotice('homeNotice', 'The shared session service is unavailable. The passcode was not changed so classrooms do not split into different sessions.', 'bad');
+        return;
       }
-    } catch (error) {
-      console.warn('Shared session API unavailable; refreshing local session.', error);
     }
     const randomCode = await App.randomDigits(6);
     await Database.putMeta('current_session', { date: App.getTodayKey(), code: randomCode, startedAt: new Date().toISOString() });
@@ -1442,6 +1572,10 @@ class App {
     }
 
     const session = await App.syncSession();
+    if (!session || !session.code) {
+      App.showNotice('studentNotice', 'The shared classroom session is unavailable. Please try again when the instructor service is online.', 'bad');
+      return;
+    }
     if (code !== session.code) {
       App.showNotice('studentNotice', 'Invalid active session passcode.', 'bad');
       return;
@@ -1570,16 +1704,20 @@ class App {
     if (!isAdmin) return;
 
     App.getInstructors().then(instructors => {
+      const search = (document.getElementById('instructorSearch')?.value || '').trim().toLowerCase();
+      const visible = instructors.filter(i => !search || i.name.toLowerCase().includes(search) || i.username.toLowerCase().includes(search));
+      const count = document.getElementById('instructorCount');
+      if (count) count.textContent = `${visible.length} of ${instructors.length} instructor${instructors.length === 1 ? '' : 's'}`;
       list.replaceChildren();
-      if (!instructors.length) {
+      if (!visible.length) {
         const empty = document.createElement('div');
         empty.className = 'label';
-        empty.textContent = 'No instructor accounts yet. Add the first instructor above.';
+        empty.textContent = search ? 'No instructors match your search.' : 'No instructor accounts yet. Add the first instructor above.';
         list.appendChild(empty);
         return;
       }
 
-      instructors.forEach(instructor => {
+      visible.forEach(instructor => {
         const item = document.createElement('div');
         item.className = 'item';
 
@@ -1663,10 +1801,11 @@ class App {
       phone,
       active: true,
       createdAt: new Date().toISOString(),
-      createdBy: 'admin'
+      createdBy: 'admin',
+      passwordChangedAt: new Date().toISOString(),
+      mustChangePassword: true
     });
 
-    await App.saveInstructors(instructors);
     try {
       const token = sessionStorage.getItem('authToken');
       if (CONFIG.REMOTE_API_ENABLED && token && !token.startsWith(LOCAL_TOKEN_PREFIX)) {
@@ -1679,8 +1818,9 @@ class App {
           throw new Error(syncData.error || 'Server provisioning failed.');
         }
       }
+      await App.saveInstructors(instructors);
     } catch (syncError) {
-      App.showNotice('instructorManagementNotice', `${name} was saved locally, but server recovery setup failed: ${syncError.message}`, 'warn');
+      App.showNotice('instructorManagementNotice', `${name} was not created because server provisioning failed: ${syncError.message}`, 'bad');
       App.renderInstructorManagement();
       return;
     }
@@ -1706,18 +1846,114 @@ class App {
     const instructors = await App.getInstructors();
     const instructor = instructors.find(i => i.username === username);
     if (!instructor) return;
+    App.openChangePassword({ targetUsername: instructor.username, targetName: instructor.name, adminReset: true });
+  }
 
-    const newPassword = prompt(`Set a new password for ${instructor.name}:`);
-    if (newPassword === null) return;
-    if (newPassword.length < 10 || newPassword.length > 128 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      App.showNotice('instructorManagementNotice', 'Password must be 10–128 characters and include uppercase, lowercase, and a number.', 'bad');
-      return;
+  static openChangePassword(options = {}) {
+    const modal = document.getElementById('securityModal');
+    const form = document.getElementById('changePasswordForm');
+    const title = document.getElementById('securityModalTitle');
+    const current = document.getElementById('currentPasswordInput');
+    const feedback = document.getElementById('changePasswordFeedback');
+    if (!modal || !form) return;
+    App.passwordChangeTarget = options.adminReset ? options : null;
+    title.textContent = options.adminReset ? `Reset password • ${options.targetName}` : 'Change my password';
+    current.closest('.field').classList.toggle('hidden', !!options.adminReset);
+    current.required = !options.adminReset;
+    feedback.textContent = options.adminReset ? 'Set a new temporary password for this instructor.' : 'Use 10–128 characters with uppercase, lowercase, and a number.';
+    form.reset();
+    App.updatePasswordMeter();
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    setTimeout(() => (options.adminReset ? document.getElementById('changePasswordInput') : current)?.focus(), 40);
+  }
+
+  static closeSecurityModal() {
+    const modal = document.getElementById('securityModal');
+    if (!modal) return;
+    modal.classList.remove('open'); modal.setAttribute('aria-hidden','true');
+    App.passwordChangeTarget = null;
+    document.getElementById('changePasswordForm')?.reset();
+    document.getElementById('securityModalNotice')?.replaceChildren();
+    App.updatePasswordMeter();
+  }
+
+  static togglePassword(id, button) {
+    const input = document.getElementById(id); if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+    button.textContent = input.type === 'password' ? 'Show' : 'Hide';
+  }
+
+  static passwordValid(password) {
+    return password.length >= 10 && password.length <= 128 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password);
+  }
+
+  static updatePasswordMeter() {
+    const input = document.getElementById('changePasswordInput');
+    const meter = document.getElementById('changePasswordMeter');
+    const feedback = document.getElementById('changePasswordFeedback');
+    if (!input || !meter || !feedback) return;
+    const p = input.value;
+    const score = [p.length >= 10, /[A-Z]/.test(p), /[a-z]/.test(p), /[0-9]/.test(p), p.length >= 14].filter(Boolean).length;
+    meter.style.width = `${score * 20}%`;
+    feedback.textContent = !p ? 'Use 10–128 characters with uppercase, lowercase, and a number.' : App.passwordValid(p) ? 'Password meets the minimum requirements.' : 'Add the missing length/character requirements.';
+    input.setAttribute('aria-invalid', p && !App.passwordValid(p) ? 'true' : 'false');
+  }
+
+  static async submitChangePassword(event) {
+    event.preventDefault();
+    const current = document.getElementById('currentPasswordInput').value;
+    const next = document.getElementById('changePasswordInput').value;
+    const confirmNext = document.getElementById('confirmPasswordInput').value;
+    const target = App.passwordChangeTarget;
+    if (!App.passwordValid(next)) return App.showNotice('securityModalNotice','Password must be 10–128 characters and include uppercase, lowercase, and a number.','bad');
+    if (next !== confirmNext) return App.showNotice('securityModalNotice','The new passwords do not match.','bad');
+
+    try {
+      if (target?.adminReset) {
+        if (!App.currentUser || App.currentUser.role !== 'admin') throw new Error('Administrator access is required.');
+        const instructors = await App.getInstructors();
+        const instructor = instructors.find(i => i.username === target.targetUsername);
+        if (!instructor) throw new Error('Instructor account was not found.');
+        instructor.passwordHash = await App.hashSecret(next);
+        instructor.passwordChangedAt = new Date().toISOString();
+        instructor.mustChangePassword = true;
+        await App.saveInstructors(instructors);
+        if (CONFIG.REMOTE_API_ENABLED) App.showNotice('instructorManagementNotice', 'Local password reset saved. Configure the server-side admin password endpoint to keep remote authentication in sync.', 'warn');
+        App.closeSecurityModal();
+        App.showNotice('instructorManagementNotice', `Password reset for ${instructor.name}. They must change it after signing in.`, 'ok');
+        App.renderInstructorManagement();
+        return;
+      }
+
+      if (!App.currentUser) throw new Error('Your session has expired.');
+      if (App.currentUser.role === 'admin') {
+        const stored = localStorage.getItem('instructorPinHash');
+        const legacy = localStorage.getItem('instructorPin');
+        let verified = stored ? await App.verifySecret(current, (() => { try { return JSON.parse(stored); } catch { return stored; } })()) : legacy ? current === legacy : false;
+        if (!verified) throw new Error('Current password is incorrect.');
+        const upgraded = await App.hashSecret(next);
+        localStorage.setItem('instructorPinHash', JSON.stringify(upgraded));
+        localStorage.setItem('adminPasswordChangedAt', new Date().toISOString());
+        localStorage.removeItem('instructorPin');
+        if (App.currentUser) App.currentUser.mustChangePassword = false;
+      } else {
+        const instructors = await App.getInstructors();
+        const instructor = instructors.find(i => i.username === App.currentUser.username);
+        if (!instructor || !(await App.verifySecret(current, instructor.passwordHash))) throw new Error('Current password is incorrect.');
+        instructor.passwordHash = await App.hashSecret(next);
+        instructor.passwordChangedAt = new Date().toISOString();
+        instructor.mustChangePassword = false;
+        await App.saveInstructors(instructors);
+        if (App.currentUser) App.currentUser.mustChangePassword = false;
+      }
+      App.closeSecurityModal();
+      App.logoutInstructor();
+      App.showNotice('authNotice','Password changed. Please sign in again with your new password.','ok');
+      Router.navigate('instructorView');
+    } catch (err) {
+      App.showNotice('securityModalNotice', err.message || 'Password update failed.','bad');
     }
-
-    instructor.passwordHash = await App.hashSecret(newPassword);
-    instructor.passwordChangedAt = new Date().toISOString();
-    await App.saveInstructors(instructors);
-    App.showNotice('instructorManagementNotice', `Password reset for ${instructor.name}.`, 'ok');
   }
 
   static isLocalDevelopmentHost() {
@@ -1744,23 +1980,28 @@ class App {
       let adminVerified = false;
       if (storedHash) adminVerified = await App.verifySecret(password, (() => { try { return JSON.parse(storedHash); } catch { return storedHash; } })());
       else if (legacyPin) adminVerified = password === legacyPin;
-      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && App.isLocalDevelopmentHost()) {
-        // Development bootstrap is deliberately restricted to localhost.
+      else if (LOCAL_FALLBACK_ALLOWED && username === 'admin') {
+        // Built-in static admin bootstrap for the configured demo password.
         adminVerified = password === '2468';
       }
 
       // Built-in local administrator bootstrap is strictly limited to localhost.
       if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && adminVerified) {
+        const firstAdminSetup = !storedHash && !legacyPin;
         if (!storedHash || typeof storedHash === 'string') {
           const upgraded = await App.hashSecret(password);
           localStorage.setItem('instructorPinHash', JSON.stringify(upgraded));
+          localStorage.setItem('adminPasswordChangedAt', new Date().toISOString());
           localStorage.removeItem('instructorPin');
         }
-        App.currentUser = { username: 'admin', name: 'System Administrator', role: 'admin', subjects: 'All subjects' };
+        App.currentUser = { username: 'admin', name: 'System Administrator', role: 'admin', subjects: 'All subjects', mustChangePassword: firstAdminSetup };
+        App.renderSecurityIdentity();
+        if (firstAdminSetup) setTimeout(() => App.openChangePassword(), 150);
         sessionStorage.setItem('authToken', 'local-admin-token');
         sessionStorage.setItem('authRole', 'admin');
         sessionStorage.setItem('authUsername', 'admin');
         App.authFailures = 0;
+        App.armSessionTimeout();
         App.setBackendStatus('Local admin');
         document.getElementById('instructorAuth').classList.add('hidden');
         document.getElementById('instructorDesk').classList.remove('hidden');
@@ -1778,10 +2019,13 @@ class App {
           role: 'instructor',
           subjects: instructor.subjects || ''
         };
+        App.renderSecurityIdentity();
+        if (instructor.mustChangePassword) setTimeout(() => App.openChangePassword(), 150);
         sessionStorage.setItem('authToken', 'local-instructor-token');
         sessionStorage.setItem('authRole', 'instructor');
         sessionStorage.setItem('authUsername', instructor.username);
         App.authFailures = 0;
+        App.armSessionTimeout();
         App.setBackendStatus('Local instructor');
         document.getElementById('instructorAuth').classList.add('hidden');
         document.getElementById('instructorDesk').classList.remove('hidden');
@@ -1800,6 +2044,9 @@ class App {
     }
 
 
+
+
+
     try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/login`, {
         method: 'POST',
@@ -1814,15 +2061,17 @@ class App {
       }
 
       sessionStorage.setItem('authToken', data.token);
-      sessionStorage.setItem('authRole', 'instructor');
+      sessionStorage.setItem('authRole', data.role || 'instructor');
       sessionStorage.setItem('authUsername', username);
-      App.currentUser = { username, name: data.name || username, role: data.role || 'instructor', subjects: data.subjects || '' };
+      App.currentUser = { username, name: data.name || username, role: data.role || 'instructor', subjects: data.subjects || '', mustChangePassword: !!data.mustChangePassword };
+      App.renderSecurityIdentity();
       App.authFailures = 0;
+      App.armSessionTimeout();
 
       document.getElementById('instructorAuth').classList.add('hidden');
       document.getElementById('instructorDesk').classList.remove('hidden');
       document.getElementById('authNotice').replaceChildren();
-      
+
       await App.refreshDashboard();
 
     } catch (err) {
@@ -1833,6 +2082,27 @@ class App {
         ? 'The system is currently unavailable. Please check your connection or use the local admin fallback.'
         : 'The instructor service is currently unavailable. Please check the connection and try again.', 'bad');
     }
+  }
+
+  static renderSecurityIdentity() {
+    const user = App.currentUser;
+    const name = document.getElementById('signedInName');
+    const role = document.getElementById('signedInRole');
+    const age = document.getElementById('passwordAgeBadge');
+    if (!user) return;
+    if (name) name.textContent = user.name || user.username;
+    if (role) role.textContent = `${String(user.role || 'account').toUpperCase()} • @${user.username}`;
+    const setAge = async () => {
+      let changed = null;
+      if (user.role === 'admin') {
+        const raw = localStorage.getItem('adminPasswordChangedAt'); changed = raw ? new Date(raw) : null;
+      } else {
+        const instructors = await App.getInstructors();
+        changed = new Date(instructors.find(i => i.username === user.username)?.passwordChangedAt || 0);
+      }
+      if (age) age.textContent = changed && changed.getTime() > 0 ? `Password changed ${Math.max(0,Math.floor((Date.now()-changed.getTime())/86400000))}d ago` : 'Password update recommended';
+    };
+    setAge();
   }
 
   static getPublicAccessUrl() {
@@ -1878,7 +2148,7 @@ class App {
   static showForgotPassword(show) {
     const authForm = document.getElementById('instructorAuth');
     const resetForm = document.getElementById('forgotPasswordForm');
-    
+
     if (show) {
       authForm.classList.add('hidden');
       resetForm.classList.remove('hidden');
@@ -1939,9 +2209,8 @@ class App {
 
       // In static mode this is intentionally shown for local/demo testing only.
       App.showNotice('resetNotice',
-        `Static GitHub mode: your one-time recovery code is ${code}. It expires in 10 minutes.`,
+        `Demo recovery mode: your one-time code is ${code}. No SMS is sent in GitHub-only mode; use a server for real recovery.`,
         'ok');
-      document.getElementById('smsCodeInput').value = code;
       return;
     }
 
@@ -2085,11 +2354,23 @@ class App {
     }
   }
 
+  static armSessionTimeout() {
+    clearTimeout(App.sessionTimer);
+    if (!App.currentUser) return;
+    App.sessionTimer = setTimeout(() => {
+      if (!App.currentUser) return;
+      App.logoutInstructor();
+      Router.navigate('instructorView');
+      App.showNotice('authNotice','Your 30-minute security session expired. Please sign in again.','warn');
+    }, 30 * 60 * 1000);
+  }
+
   static logoutInstructor() {
+    clearTimeout(App.sessionTimer);
+    App.sessionTimer = null;
     sessionStorage.removeItem('authToken');
     sessionStorage.removeItem('authRole');
     sessionStorage.removeItem('authUsername');
-    App.currentUser = null;
     App.currentUser = null;
     document.getElementById('instructorDesk').classList.add('hidden');
     document.getElementById('instructorAuth').classList.remove('hidden');
@@ -2388,7 +2669,7 @@ class App {
       const headers = ['ID', 'Type', 'Student ID', 'Name', 'Subject', 'Schedule', 'Reason', 'Reporter', 'Teacher Status', 'Date', 'Timestamp', 'Status'];
           const escapeCsv = value => {
             const text = String(value ?? '');
-            const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+            const safeText = /^[=+-@]/.test(text) ? `'${text}` : text;
             return `"${safeText.replace(/"/g, '""')}"`;
           };
           const rows = records.map(r => [r.id, r.recordType || 'attendance', r.studentId, r.name, r.subject || '', r.scheduleLabel || '', r.reason || '', r.reporterRole || '', r.teacherStatus || '', r.dateKey, r.timestamp, r.status].map(escapeCsv));
@@ -2421,5 +2702,41 @@ window.addEventListener('DOMContentLoaded', () => {
   App.init();
 });
 </script>
+
+  <div id="securityModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="securityModalTitle" aria-hidden="true">
+    <div class="app-modal">
+      <div class="modal-head">
+        <div><div class="label">ACCOUNT SECURITY</div><h3 id="securityModalTitle">Change password</h3></div>
+        <button type="button" class="modal-close" aria-label="Close" onclick="App.closeSecurityModal()">×</button>
+      </div>
+      <div id="securityModalNotice"></div>
+      <form id="changePasswordForm" autocomplete="off">
+        <div class="field password-field">
+          <label for="currentPasswordInput">Current password</label>
+          <input id="currentPasswordInput" type="password" maxlength="128" autocomplete="current-password" required>
+          <button type="button" class="password-toggle" onclick="App.togglePassword('currentPasswordInput', this)">Show</button>
+        </div>
+        <div class="field password-field">
+          <label for="changePasswordInput">New password</label>
+          <input id="changePasswordInput" type="password" maxlength="128" autocomplete="new-password" required>
+          <button type="button" class="password-toggle" onclick="App.togglePassword('changePasswordInput', this)">Show</button>
+        </div>
+        <div class="password-meter" aria-hidden="true"><span id="changePasswordMeter"></span></div>
+        <div id="changePasswordFeedback" class="password-feedback">Use 10–128 characters with uppercase, lowercase, and a number.</div>
+        <div class="field password-field">
+          <label for="confirmPasswordInput">Confirm new password</label>
+          <input id="confirmPasswordInput" type="password" maxlength="128" autocomplete="new-password" required>
+          <button type="button" class="password-toggle" onclick="App.togglePassword('confirmPasswordInput', this)">Show</button>
+        </div>
+        <p class="security-note">Changing your password signs out this local session after the password is saved. For a public deployment, password enforcement and recovery should be performed by your server, not only in browser storage.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost" onclick="App.closeSecurityModal()">Cancel</button>
+          <button type="submit" class="btn primary">Update password</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
+
+  
