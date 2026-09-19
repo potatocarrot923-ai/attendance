@@ -1,4 +1,4 @@
-"""Carrot Attendance shared API. Dependency-free local server for classroom.html."""
+ 
 from __future__ import annotations
 
 import hashlib
@@ -18,7 +18,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 LAN_MODE = os.environ.get("CARROT_LAN_MODE") == "1"
-PUBLIC_MODE = os.environ.get("CARROT_PUBLIC_MODE") == "1"
+RENDER_MODE = bool(os.environ.get("RENDER_SERVICE_ID") or os.environ.get("RENDER"))
+PUBLIC_MODE = os.environ.get("CARROT_PUBLIC_MODE") == "1" or RENDER_MODE
 HOST = "0.0.0.0" if LAN_MODE or PUBLIC_MODE else "127.0.0.1"
 PORT = int(os.environ.get("PORT", "3000"))
 HTTPS_PORT = 3443
@@ -443,7 +444,7 @@ if __name__ == "__main__":
         ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
 
     if not CERT_FILE.exists() or not KEY_FILE.exists():
-        raise SystemExit("Missing HTTPS certificate. Generate certs/carrot-cert.pem and certs/carrot-key.pem first.")
+        raise SystemExit("Missing HTTPS certificate for local mode. Set CARROT_PUBLIC_MODE=1 when deploying behind a hosting provider.")
     save_data(Handler.data)
     https_server = ThreadingHTTPServer((HOST, HTTPS_PORT), Handler)
     tls_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
