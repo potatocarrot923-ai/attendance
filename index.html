@@ -981,6 +981,8 @@ class App {
   static sessionTimer = null;
   static activeOtpCode = null;
   static activeOtpPhone = null;
+  static activeOtpChallengeId = null;
+  static otpRemoteVerified = false;
 
   static async hashSecret(secret, saltHex = null) {
     if (!window.crypto || !window.crypto.subtle) {
@@ -1045,42 +1047,44 @@ class App {
       App.showNotice('resetNotice', 'Too many requests. Please wait before trying again.', 'bad');
       return;
     }
-
-    const phoneRaw = document.getElementById('resetPhone').value;
-    const phone = App.normalizePhilippinePhone(phoneRaw);
+    const phone = App.normalizePhilippinePhone(document.getElementById('resetPhone').value);
     if (!phone) {
-      App.showNotice('resetNotice', 'Enter a valid 11-digit Philippine mobile number starting with 09.', 'bad');
+      App.showNotice('resetNotice', 'Enter a valid Philippine mobile number.', 'bad');
       return;
     }
-
-    App.activeOtpPhone = phone;
-    App.activeOtpCode = await App.randomDigits(6);
-
-    if (CONFIG.REMOTE_API_ENABLED) {
-      try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/request-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone })
-        });
-        if (!response.ok) throw new Error('Could not send OTP');
-      } catch (e) {
-        App.showNotice('resetNotice', 'SMS gateway offline. Local OTP active.', 'warn');
-      }
+    if (!CONFIG.REMOTE_API_ENABLED) {
+      App.showNotice('resetNotice', 'Password recovery requires the shared server and SMS provider.', 'warn');
+      return;
     }
-
-    document.getElementById('resetStep1').classList.add('hidden');
-    document.getElementById('resetStep2').classList.remove('hidden');
-    App.showNotice('resetNotice', `OTP code sent to ${phone}. (Demo OTP: ${App.activeOtpCode})`, 'ok');
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/forgot-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Password recovery request failed.');
+      App.activeOtpPhone = phone;
+      App.activeOtpChallengeId = data.challengeId || null;
+      App.otpRemoteVerified = false;
+      sessionStorage.setItem('resetPhone', phone);
+      sessionStorage.setItem('resetChallengeId', App.activeOtpChallengeId || '');
+      document.getElementById('resetStep1').classList.add('hidden');
+      document.getElementById('resetStep2').classList.remove('hidden');
+      App.showNotice('resetNotice', 'A one-time verification code was sent by the configured recovery provider. Do not share it.', 'ok');
+    } catch (e) {
+      App.resetFailures += 1;
+      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
+      App.showNotice('resetNotice', e.message || 'Password recovery is temporarily unavailable.', 'bad');
+    }
   }
 
   static async submitPasswordReset() {
+    const phone = App.normalizePhilippinePhone(document.getElementById('resetPhone').value);
     const enteredOtp = document.getElementById('smsCodeInput').value.trim();
     const newPassword = document.getElementById('newPasswordInput').value;
     const confirmPassword = document.getElementById('confirmPasswordInput').value;
-
-    if (enteredOtp !== App.activeOtpCode) {
-      App.showNotice('resetNotice', 'Invalid OTP code. Please check and try again.', 'bad');
+    const challengeId = sessionStorage.getItem('resetChallengeId') || App.activeOtpChallengeId || '';
+    if (!phone || !/^\d{6}$/.test(enteredOtp) || !challengeId) {
+      App.showNotice('resetNotice', 'Enter the six-digit verification code from SMS.', 'bad');
       return;
     }
     if (!App.passwordValid(newPassword)) {
@@ -1091,22 +1095,32 @@ class App {
       App.showNotice('resetNotice', 'Passwords do not match.', 'bad');
       return;
     }
-
-    const instructors = await App.getInstructors();
-    const instructor = instructors.find(i => i.phone === App.activeOtpPhone);
-
-    if (instructor) {
-      instructor.passwordHash = await App.hashSecret(newPassword);
-      instructor.passwordChangedAt = new Date().toISOString();
-      await App.saveInstructors(instructors);
-    } else {
-      const updatedHash = await App.hashSecret(newPassword);
-      localStorage.setItem('instructorPinHash', JSON.stringify(updatedHash));
-      localStorage.setItem('adminPasswordChangedAt', new Date().toISOString());
+    if (!CONFIG.REMOTE_API_ENABLED) {
+      App.showNotice('resetNotice', 'Password recovery requires the shared server.', 'warn');
+      return;
     }
-
-    App.showNotice('authNotice', 'Password reset successful! Please sign in with your new password.', 'ok');
-    App.showForgotPassword(false);
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/auth/reset-password`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code: enteredOtp, challengeId, newPassword })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Invalid or expired verification code.');
+      sessionStorage.removeItem('resetPhone');
+      sessionStorage.removeItem('resetChallengeId');
+      App.activeOtpCode = null; App.activeOtpPhone = null; App.activeOtpChallengeId = null;
+      App.showNotice('authNotice', 'Password reset successful. Please sign in with your new password.', 'ok');
+      App.showForgotPassword(false);
+      document.getElementById('resetStep1').classList.remove('hidden');
+      document.getElementById('resetStep2').classList.add('hidden');
+      document.getElementById('smsCodeInput').value = '';
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
+    } catch (e) {
+      App.resetFailures += 1;
+      if (App.resetFailures >= 5) App.resetLockedUntil = Date.now() + 60000;
+      App.showNotice('resetNotice', e.message || 'Invalid verification code.', 'bad');
+    }
   }
 
   static updateConnectionState() {
@@ -1215,40 +1229,53 @@ class App {
   }
 
   static async loadSubjects() {
+    let cloud = null;
+    if (CONFIG.REMOTE_API_ENABLED) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/api/subjects`);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) cloud = data;
+        }
+      } catch (error) { console.warn('Shared subject API unavailable; using cached subjects.', error); }
+    }
     const saved = await Database.getMeta('subject_catalog');
     const stored = saved && Array.isArray(saved.value) ? saved.value : [];
     const fromSchedule = App.schedule.map(slot => slot.subject);
-    const merged = [...DEFAULT_SUBJECTS, ...stored, ...fromSchedule]
-      .map(App.normalizeSubject)
-      .filter(Boolean);
-    App.subjects = [...new Map(merged.map(subject => [subject.toLowerCase(), subject])).values()].sort((a, b) => a.localeCompare(b));
+    const source = cloud || [...stored, ...fromSchedule];
+    const merged = [...DEFAULT_SUBJECTS, ...source].map(App.normalizeSubject).filter(Boolean);
+    App.subjects = [...new Map(merged.map(subject => [subject.toLowerCase(), subject])).values()].sort((a,b) => a.localeCompare(b));
     await Database.putMeta('subject_catalog', App.subjects);
   }
 
   static async addSubject() {
     if (!App.currentUser || !['admin', 'instructor'].includes(App.currentUser.role)) {
-      App.showNotice('subjectNotice', 'Unlock the Instructor Desk to manage subjects.', 'bad');
-      return;
+      App.showNotice('subjectNotice', 'Unlock the Instructor Desk to manage subjects.', 'bad'); return;
     }
     const input = document.getElementById('newSubjectName');
     const subject = App.normalizeSubject(input?.value);
-    if (subject.length < 2) {
-      App.showNotice('subjectNotice', 'Enter a subject name with at least 2 characters.', 'bad');
-      input?.focus();
-      return;
-    }
+    if (subject.length < 2) { App.showNotice('subjectNotice', 'Enter a subject name with at least 2 characters.', 'bad'); input?.focus(); return; }
     if (App.subjects.some(item => item.toLowerCase() === subject.toLowerCase())) {
-      App.showNotice('subjectNotice', 'That subject is already in the catalog.', 'warn');
-      return;
+      App.showNotice('subjectNotice', 'That subject is already in the catalog.', 'warn'); return;
     }
-    App.subjects = [...App.subjects, subject].sort((a, b) => a.localeCompare(b));
-    await Database.putMeta('subject_catalog', App.subjects);
-    App.renderSubjectControls();
-    App.renderSubjectCatalog();
-    if (input) input.value = '';
-    const scheduleInput = document.getElementById('scheduleSubject');
-    if (scheduleInput) scheduleInput.value = subject;
-    App.showNotice('subjectNotice', `${subject} is ready to use in your schedule.`, 'ok');
+    if (!CONFIG.REMOTE_API_ENABLED) { App.showNotice('subjectNotice', 'The shared server is required to add a subject for all devices.', 'bad'); return; }
+    const token = sessionStorage.getItem('authToken');
+    try {
+      const next = [...App.subjects, subject].sort((a,b) => a.localeCompare(b));
+      const response = await fetch(`${CONFIG.API_BASE_URL}/api/subjects`, {
+        method:'PUT', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify({subjects:next})
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Subject catalog sync failed.');
+      App.subjects = Array.isArray(data) ? data : next;
+      await Database.putMeta('subject_catalog', App.subjects);
+      App.renderSubjectControls(); App.renderSubjectCatalog();
+      if (input) input.value = '';
+      const scheduleInput = document.getElementById('scheduleSubject'); if (scheduleInput) scheduleInput.value = subject;
+      App.showNotice('subjectNotice', `${subject} was added to the shared subject catalog.`, 'ok');
+    } catch (error) {
+      App.showNotice('subjectNotice', error.message || 'Could not save the shared subject catalog.', 'bad');
+    }
   }
 
   static renderSubjectControls() {
@@ -1671,44 +1698,34 @@ class App {
   }
 
   static capturePhoto() {
-    const video = document.getElementById('webcam');
-    const canvas = document.getElementById('photoCanvas');
-    const notice = document.getElementById('cameraNotice');
-    if (!video.srcObject || !video.videoWidth) {
-      notice.classList.remove('hidden');
-      App.showNotice('studentNotice', 'Camera is not ready. Allow camera access and try again.', 'bad');
-      return;
-    }
-
-    // Keep proof small enough for reliable mobile upload while retaining useful visual detail.
-    const maxWidth = 960;
-    const scale = Math.min(1, maxWidth / video.videoWidth);
-    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
-    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
-    const ctx = canvas.getContext('2d', { alpha: false });
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        App.showNotice('studentNotice', 'The camera photo could not be created. Please try again.', 'bad');
-        return;
-      }
-      App.capturedBlob = blob;
-      const reader = new FileReader();
-      reader.onload = () => {
-        App.capturedDataUrl = String(reader.result || '');
-        const preview = document.getElementById('proofPreview');
-        const image = document.getElementById('proofPreviewImage');
-        const size = document.getElementById('proofSize');
-        image.src = App.capturedDataUrl;
-        size.textContent = `${Math.round(blob.size / 1024)} KB`;
-        preview.classList.remove('hidden');
-        video.classList.add('hidden');
-        canvas.classList.remove('hidden');
-        notice.classList.add('hidden');
-      };
-      reader.readAsDataURL(blob);
-    }, 'image/jpeg', 0.72);
+    const video = document.getElementById('webcam'), canvas = document.getElementById('photoCanvas'), notice = document.getElementById('cameraNotice');
+    if (!video?.srcObject || !video.videoWidth) { notice?.classList.remove('hidden'); App.showNotice('studentNotice','Camera is not ready. Allow camera access and try again.','bad'); return; }
+    const render = (width, quality, done) => {
+      const scale = Math.min(1, width / video.videoWidth);
+      canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+      canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+      const ctx = canvas.getContext('2d', {alpha:false});
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      canvas.toBlob(blob => done(blob), 'image/jpeg', quality);
+    };
+    const compress = (attempt=0, width=720, quality=0.62) => {
+      render(width, quality, blob => {
+        if (!blob) { App.showNotice('studentNotice','The camera photo could not be created. Please try again.','bad'); return; }
+        // Keep the complete JSON request comfortably below the server limit.
+        if (blob.size > 500000 && attempt < 7) return compress(attempt+1, Math.max(360, Math.round(width*0.82)), Math.max(0.38, quality-0.06));
+        if (blob.size > 650000) { App.showNotice('studentNotice','The photo is still too large. Please retake the photo.','bad'); return; }
+        App.capturedBlob = blob;
+        const reader = new FileReader();
+        reader.onload = () => {
+          App.capturedDataUrl = String(reader.result || '');
+          const preview=document.getElementById('proofPreview'), image=document.getElementById('proofPreviewImage'), size=document.getElementById('proofSize');
+          if(image) image.src=App.capturedDataUrl; if(size) size.textContent=`${Math.round(blob.size/1024)} KB`;
+          preview?.classList.remove('hidden'); video.classList.add('hidden'); canvas.classList.remove('hidden'); notice?.classList.add('hidden');
+        };
+        reader.readAsDataURL(blob);
+      });
+    };
+    compress();
   }
 
   static resetCamera() {
@@ -1811,11 +1828,20 @@ class App {
     try {
       if (CONFIG.REMOTE_API_ENABLED) {
         try {
-          const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...(sessionStorage.getItem('authToken') ? { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` } : {}) },
-            body: JSON.stringify(payload)
-          });
+          let response;
+          let lastError;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...(sessionStorage.getItem('authToken') ? { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` } : {}) },
+                body: JSON.stringify(payload)
+              });
+              if (response.status >= 500 && attempt < 2) { await new Promise(r => setTimeout(r, 500 * (attempt + 1))); continue; }
+              break;
+            } catch (e) { lastError = e; if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1))); }
+          }
+          if (!response) throw lastError || new Error('Shared server did not respond.');
           if (response.status === 409) {
             App.showNotice('studentNotice', 'This student already has an attendance record for this subject today.', 'warn');
             return;
