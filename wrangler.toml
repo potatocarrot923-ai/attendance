@@ -1,0 +1,6 @@
+name = "carrot-attendance"
+pages_build_output_dir = "."
+compatibility_date = "2026-09-21"
+
+# Create the D1 database in the Cloudflare dashboard, then add a production
+# binding named CARROT_DB under Workers & Pages > carrot-attendance > Settings.
