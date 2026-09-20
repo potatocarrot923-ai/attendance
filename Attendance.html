@@ -240,7 +240,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .instructor-toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}.instructor-toolbar input{min-width:220px;flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:9px}
 @media(max-width:650px){.account-security-card{grid-template-columns:1fr}.security-actions{justify-content:stretch}.security-actions .btn{flex:1}.app-modal{padding:16px}.instructor-toolbar input{min-width:100%}}
 </style>
-<script src="[[https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js\](https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js)](https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js]\(https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js\))" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 .qr-modal { position:fixed; inset:0; background:rgba(15,23,42,.58); backdrop-filter:blur(5px); display:none; align-items:center; justify-content:center; padding:20px; z-index:1000; }
 .qr-modal.open { display:flex; }
@@ -1989,7 +1989,7 @@ class App {
 
       // Built-in local administrator bootstrap is strictly limited to localhost.
       if (LOCAL_FALLBACK_ALLOWED && username === 'admin' && adminVerified) {
-        const firstAdminSetup = !storedHash && !legacyPin;
+        const firstAdminSetup = false;
         if (!storedHash || typeof storedHash === 'string') {
           const upgraded = await App.hashSecret(password);
           localStorage.setItem('instructorPinHash', JSON.stringify(upgraded));
@@ -2114,23 +2114,81 @@ class App {
     return url.toString();
   }
 
-  static openAccessQR() {
+  static async ensureQrLibrary() {
+    if (window.QRCode) return true;
+
+    const sources = [
+      'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+      'https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js'
+    ];
+
+    for (const src of sources) {
+      try {
+        await new Promise((resolve, reject) => {
+          const existing = document.querySelector(`script[data-qr-src="${src}"]`);
+          if (existing) {
+            if (window.QRCode) return resolve();
+            existing.addEventListener('load', resolve, { once: true });
+            existing.addEventListener('error', reject, { once: true });
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          script.dataset.qrSrc = src;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+        if (window.QRCode) return true;
+      } catch (_) {
+        // Try the next trusted CDN fallback.
+      }
+    }
+    return !!window.QRCode;
+  }
+
+  static async openAccessQR() {
     const modal = document.getElementById('qrModal');
     const box = document.getElementById('accessQr');
     const urlEl = document.getElementById('accessQrUrl');
     if (!modal || !box || !urlEl) return;
+
     const url = App.getPublicAccessUrl();
     box.replaceChildren();
     urlEl.textContent = url;
-    if (window.QRCode) {
-      new QRCode(box, { text: url, width: CONFIG.QR_SIZE, height: CONFIG.QR_SIZE, correctLevel: QRCode.CorrectLevel.M });
-    } else {
+    modal.classList.add('open');
+
+    const loading = document.createElement('div');
+    loading.className = 'notice warn';
+    loading.textContent = 'Preparing secure QR code…';
+    box.appendChild(loading);
+
+    const ready = await App.ensureQrLibrary();
+    box.replaceChildren();
+
+    if (!ready) {
       const msg = document.createElement('div');
-      msg.className = 'notice warn';
-      msg.textContent = 'QR library is still loading. Please try again in a moment.';
+      msg.className = 'notice bad';
+      msg.textContent = 'QR generator could not be loaded. Check the internet connection, then close and reopen the QR window.';
+      box.appendChild(msg);
+      return;
+    }
+
+    try {
+      new window.QRCode(box, {
+        text: url,
+        width: CONFIG.QR_SIZE,
+        height: CONFIG.QR_SIZE,
+        correctLevel: window.QRCode.CorrectLevel.M
+      });
+    } catch (error) {
+      console.error('QR generation failed:', error);
+      const msg = document.createElement('div');
+      msg.className = 'notice bad';
+      msg.textContent = 'The QR code could not be generated. Please try again.';
       box.appendChild(msg);
     }
-    modal.classList.add('open');
   }
 
   static closeAccessQR() {
