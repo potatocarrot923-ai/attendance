@@ -846,12 +846,17 @@ class Database {
   static async executeTransaction(storeName, mode, callback) {
     const db = await Database.getDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, mode);
-      const store = tx.objectStore(storeName);
-      const request = callback(store);
-      tx.oncomplete = () => resolve(request ? request.result : null);
-      tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
-      tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
+      let request = null;
+      try {
+        const tx = db.transaction(storeName, mode);
+        const store = tx.objectStore(storeName);
+        request = callback(store);
+        tx.oncomplete = () => resolve(request ? request.result : null);
+        tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
+        tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
@@ -873,10 +878,16 @@ class Database {
 
   static async clearAll() {
     const db = await Database.getDB();
-    const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
-    tx.objectStore(CONFIG.storeName).clear();
-    tx.objectStore(CONFIG.metaStore).clear();
-    return new Promise(res => tx.oncomplete = res);
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction([CONFIG.storeName, CONFIG.metaStore], 'readwrite');
+        tx.objectStore(CONFIG.storeName).clear();
+        tx.objectStore(CONFIG.metaStore).clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error('Database clear failed.'));
+        tx.onabort = () => reject(tx.error || new Error('Database clear aborted.'));
+      } catch (error) { reject(error); }
+    });
   }
 }
 
@@ -943,6 +954,7 @@ class App {
 
   static showNotice(id, message, type) {
     const notice = document.getElementById(id);
+    if (!notice) { console.warn(`Notice container not found: ${id}`); return; }
     notice.replaceChildren();
     const box = document.createElement('div');
     box.className = `notice ${type}`;
@@ -979,7 +991,6 @@ class App {
     window.addEventListener('online', App.updateConnectionState);
     document.getElementById('qrModal')?.addEventListener('click', event => { if (event.target.id === 'qrModal') App.closeAccessQR(); });
     document.addEventListener('keydown', event => { if (event.key === 'Escape') App.closeAccessQR(); });
-    window.addEventListener('offline', App.updateConnectionState);
     setInterval(App.updateClockDisplay, 30000);
 
     const addInstructorForm = document.getElementById('addInstructorForm');
@@ -1000,16 +1011,43 @@ class App {
     const subjectSearch = document.getElementById('subjectSearch');
     if (subjectSearch) subjectSearch.addEventListener('input', () => App.renderSubjectCatalog());
 
-    // Never trust role/identity values from sessionStorage alone. A public page can be inspected and edited.
-    // The server must validate the token before granting protected API access.
-    if (sessionStorage.getItem('authToken') && !LOCAL_FALLBACK_ALLOWED) {
-      sessionStorage.removeItem('authToken');
-      sessionStorage.removeItem('authRole');
-      sessionStorage.removeItem('authUsername');
-    App.currentUser = null;
-    }
-
+    // Remote tokens are retained across reloads, but protected server endpoints still validate them.
+    await App.restoreRemoteSession();
     await App.refreshDashboard();
+  }
+
+  static async restoreRemoteSession() {
+    if (!CONFIG.REMOTE_API_ENABLED) return;
+    const token = sessionStorage.getItem('authToken');
+    const role = sessionStorage.getItem('authRole');
+    const username = sessionStorage.getItem('authUsername');
+    if (!token || token.startsWith(LOCAL_TOKEN_PREFIX) || !username) return;
+    try {
+      const response = await App.fetchWithTimeout(`${CONFIG.API_BASE_URL}/api/attendance/today`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }, 7000);
+      if (!response.ok) {
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('authRole');
+        sessionStorage.removeItem('authUsername');
+        return;
+      }
+      App.currentUser = { username, name: username, role: ['admin','instructor'].includes(role) ? role : 'instructor', subjects: '' };
+      App.renderSecurityIdentity();
+      App.armSessionTimeout();
+      document.getElementById('instructorAuth')?.classList.add('hidden');
+      document.getElementById('instructorDesk')?.classList.remove('hidden');
+    } catch (_) {
+      // Keep the token for the current tab; the next protected request will decide validity.
+    }
+  }
+
+  static async fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally { clearTimeout(timer); }
   }
 
   static updateClockDisplay() {
@@ -1347,7 +1385,7 @@ class App {
       document.getElementById('scheduleSubject')?.focus();
       return;
     }
-    if (!start || !end || !room || !teacher || start >= end) {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(start) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(end) || !room || !teacher || start >= end) {
       App.showNotice('scheduleNotice', 'Enter complete period details and make sure the end time is after the start time.', 'bad');
       return;
     }
@@ -1365,6 +1403,7 @@ class App {
       return;
     }
 
+    const previousSchedule = [...App.schedule];
     const updatedSlot = { id: editId || `schedule-${Date.now()}-${await App.randomDigits(4)}`, day, start, end, subject, room, teacher };
     App.schedule = editId ? App.schedule.map(slot => slot.id === editId ? updatedSlot : slot) : [...App.schedule, updatedSlot];
     await Database.putMeta('class_schedule', App.schedule);
@@ -1372,7 +1411,15 @@ class App {
       App.subjects = [...App.subjects, subject].sort((a, b) => a.localeCompare(b));
       await Database.putMeta('subject_catalog', App.subjects);
     }
-    await App.syncScheduleToServer();
+    const synced = await App.syncScheduleToServer(App.schedule);
+    if (CONFIG.REMOTE_API_ENABLED && !synced) {
+      App.schedule = previousSchedule;
+      await Database.putMeta('class_schedule', App.schedule);
+      App.renderSchedule();
+      App.renderScheduleManager();
+      App.showNotice('scheduleNotice', 'The class period was not saved because the shared server is unavailable. Nothing was changed.', 'bad');
+      return;
+    }
     App.renderSubjectControls();
     App.renderSubjectCatalog();
     App.renderSchedule();
@@ -1390,9 +1437,18 @@ class App {
       return;
     }
     if (!confirm(`Remove ${slot.subject} on ${slot.day} from the schedule?`)) return;
+    const previousSchedule = [...App.schedule];
     App.schedule = App.schedule.filter(scheduleSlot => scheduleSlot.id !== id);
     await Database.putMeta('class_schedule', App.schedule);
-    await App.syncScheduleToServer();
+    const synced = await App.syncScheduleToServer(App.schedule);
+    if (CONFIG.REMOTE_API_ENABLED && !synced) {
+      App.schedule = previousSchedule;
+      await Database.putMeta('class_schedule', App.schedule);
+      App.renderSchedule();
+      App.renderScheduleManager();
+      App.showNotice('scheduleNotice', 'The class period was not removed because the shared server is unavailable.', 'bad');
+      return;
+    }
     App.renderSchedule();
     App.renderScheduleManager();
     App.showNotice('scheduleNotice', `${slot.subject} was removed from the schedule.`, 'ok');
@@ -1406,20 +1462,26 @@ class App {
     return `${year}-${month}-${day}`;
   }
 
-  static async syncScheduleToServer() {
+  static async syncScheduleToServer(schedule = App.schedule) {
     const token = sessionStorage.getItem('authToken');
-    if (!token || token.startsWith(LOCAL_TOKEN_PREFIX) || !CONFIG.REMOTE_API_ENABLED) return;
+    if (!CONFIG.REMOTE_API_ENABLED) return true;
+    if (!token || token.startsWith(LOCAL_TOKEN_PREFIX)) return false;
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}/api/schedule`, {
+      const response = await App.fetchWithTimeout(`${CONFIG.API_BASE_URL}/api/schedule`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ schedule: App.schedule })
-      });
-      if (!response.ok) throw new Error('Schedule sync failed');
+        body: JSON.stringify({ schedule })
+      }, 10000);
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || `Schedule sync failed (${response.status}).`);
+      }
       App.setBackendStatus('Cloud synced');
+      return true;
     } catch (error) {
-      console.warn('Schedule API unavailable; keeping the local schedule.', error);
-      App.setBackendStatus('Local fallback');
+      console.warn('Schedule API unavailable.', error);
+      App.setBackendStatus('Cloud unavailable');
+      return false;
     }
   }
 
@@ -1584,16 +1646,20 @@ class App {
     }
 
     const allRecords = await Database.getAllRecords();
-    const duplicate = allRecords.find(r => r.recordType !== 'classroom_report' && r.studentId === studentId && r.subject === subject && r.dateKey === App.getTodayKey());
+    const normalizedStudentId = studentId.toLowerCase();
+    const normalizedSubject = subject.toLowerCase();
+    const duplicate = allRecords.find(r => r.recordType !== 'classroom_report' && String(r.studentId).toLowerCase() === normalizedStudentId && String(r.subject).toLowerCase() === normalizedSubject && r.dateKey === App.getTodayKey());
     if (duplicate) {
       App.showNotice('studentNotice', `This student has already been recorded for ${subject} today.`, 'warn');
       return;
     }
 
     const now = new Date();
-    const sessionStart = new Date(session.startedAt);
-    const diffMins = (now - sessionStart) / (1000 * 60);
-    const isLate = attendanceType === 'late' || (attendanceType !== 'absent' && diffMins > CONFIG.lateThresholdMins);
+    const [startHour, startMinute] = scheduleSlot.start.split(':').map(Number);
+    const scheduledStart = new Date(now);
+    scheduledStart.setHours(startHour, startMinute, 0, 0);
+    const diffMins = (now - scheduledStart) / (1000 * 60);
+    const isLate = attendanceType === 'late' || (attendanceType !== 'absent' && diffMins > CONFIG.lateThresholdMins && diffMins >= 0);
     const status = attendanceType === 'absent' ? 'absent' : (isLate ? 'late' : 'present');
     const normalizedReason = attendanceType === 'absent' ? absenceReason : (status === 'late' ? 'Late arrival' : 'Present');
     const normalizedTeacherStatus = teacherStatus || 'Teacher present';
@@ -1621,11 +1687,11 @@ class App {
     try {
       if (CONFIG.REMOTE_API_ENABLED) {
         try {
-          const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance`, {
+          const response = await App.fetchWithTimeout(`${CONFIG.API_BASE_URL}/api/attendance`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...(sessionStorage.getItem('authToken') ? { 'Authorization': `Bearer ${sessionStorage.getItem('authToken')}` } : {}) },
             body: JSON.stringify(payload)
-          });
+          }, 12000);
           if (response.status === 409) {
             App.showNotice('studentNotice', 'This student already has an attendance record for this subject today.', 'warn');
             return;
@@ -1660,7 +1726,9 @@ class App {
         flags: payload.flags
       });
 
-      App.showNotice('studentNotice', `Attendance recorded for ${subject}${status === 'absent' ? ` because ${normalizedReason.toLowerCase()}` : ''}${App.capturedBlob ? ' with optical proof' : ''}.`, 'ok');
+      const hadPhotoProof = !!App.capturedBlob;
+      App.capturedBlob = null;
+      App.showNotice('studentNotice', `Attendance recorded for ${subject}${status === 'absent' ? ` because ${normalizedReason.toLowerCase()}` : ''}${hadPhotoProof ? ' with optical proof' : ''}.`, 'ok');
 
       setTimeout(() => {
         document.getElementById('checkinForm').reset();
@@ -2125,19 +2193,21 @@ class App {
     for (const src of sources) {
       try {
         await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('QR library load timed out')), 8000);
+          const done = fn => value => { clearTimeout(timeout); fn(value); };
           const existing = document.querySelector(`script[data-qr-src="${src}"]`);
           if (existing) {
             if (window.QRCode) return resolve();
-            existing.addEventListener('load', resolve, { once: true });
-            existing.addEventListener('error', reject, { once: true });
+            existing.addEventListener('load', done(resolve), { once: true });
+            existing.addEventListener('error', done(reject), { once: true });
             return;
           }
           const script = document.createElement('script');
           script.src = src;
           script.async = true;
           script.dataset.qrSrc = src;
-          script.onload = resolve;
-          script.onerror = reject;
+          script.onload = done(resolve);
+          script.onerror = done(reject);
           document.head.appendChild(script);
         });
         if (window.QRCode) return true;
@@ -2155,6 +2225,16 @@ class App {
     if (!modal || !box || !urlEl) return;
 
     const url = App.getPublicAccessUrl();
+    if (/^file:/i.test(url)) {
+      modal.classList.add('open');
+      box.replaceChildren();
+      const msg = document.createElement('div');
+      msg.className = 'notice bad';
+      msg.textContent = 'This page is opened as a local file. Upload it to your website first so a phone can open the QR link.';
+      box.appendChild(msg);
+      urlEl.textContent = url;
+      return;
+    }
     box.replaceChildren();
     urlEl.textContent = url;
     modal.classList.add('open');
@@ -2446,9 +2526,9 @@ class App {
       records = await Database.getAllRecords();
     } else if (token && CONFIG.REMOTE_API_ENABLED) {
       try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/attendance/today`, {
+        const response = await App.fetchWithTimeout(`${CONFIG.API_BASE_URL}/api/attendance/today`, {
           headers: { 'Authorization': `Bearer ${token}` }
-        });
+        }, 10000);
         if (response.ok) {
             const remoteRecords = await response.json();
             records = Array.isArray(remoteRecords) ? remoteRecords.map(r => ({
@@ -2467,6 +2547,12 @@ class App {
               status: ['present', 'late', 'absent'].includes(r.status) ? r.status : 'present',
               flags: Array.isArray(r.flags) ? r.flags.slice(0, 10).map(flag => String(flag).slice(0, 40)) : []
             })) : [];
+            // Keep a local cache for export/offline viewing, while the server remains authoritative.
+            for (const record of records) await Database.putRecord(record);
+        } else {
+          console.warn('Remote attendance request returned', response.status);
+          App.setBackendStatus(`Backend unavailable (${response.status})`);
+          records = await Database.getAllRecords();
         }
       } catch (e) {
         console.warn("Unable to fetch remote records.", e);
@@ -2593,10 +2679,14 @@ class App {
       }
     }
 
-    document.getElementById('statTotal').textContent = todayRecords.length;
-    document.getElementById('statPresent').textContent = todayRecords.filter(r => r.status === 'present').length;
-    document.getElementById('statLate').textContent = todayRecords.filter(r => r.status === 'late').length;
-    document.getElementById('statFlags').textContent = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
+    const statTotal = document.getElementById('statTotal');
+    const statPresent = document.getElementById('statPresent');
+    const statLate = document.getElementById('statLate');
+    const statFlags = document.getElementById('statFlags');
+    if (statTotal) statTotal.textContent = todayRecords.length;
+    if (statPresent) statPresent.textContent = todayRecords.filter(r => r.status === 'present').length;
+    if (statLate) statLate.textContent = todayRecords.filter(r => r.status === 'late').length;
+    if (statFlags) statFlags.textContent = todayRecords.filter(r => r.flags && r.flags.length > 0).length;
 
     const totalCount = todayRecords.length || 1;
     const presentCount = todayRecords.filter(r => r.status === 'present').length;
@@ -2655,8 +2745,8 @@ class App {
       time.textContent = `${r.scheduleLabel || r.subject || 'Unscheduled'} • ${recordedTime}`;
       details.append(identity, time);
       const badge = document.createElement('span');
-      badge.className = `badge ${r.status === 'late' ? 'late' : 'present'}`;
-      badge.textContent = r.status === 'late' ? 'late' : 'present';
+      badge.className = `badge ${r.status === 'late' ? 'late' : r.status === 'absent' ? 'flagged' : 'present'}`;
+      badge.textContent = r.status === 'late' ? 'late' : r.status === 'absent' ? 'absent' : 'present';
       item.append(details, badge);
       board.appendChild(item);
     });
@@ -2744,7 +2834,7 @@ class App {
     a.href = URL.createObjectURL(blob);
     a.download = filename;
     a.click();
-    URL.revokeObjectURL(a.href);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
   static async purgeDatabase() {
@@ -2758,8 +2848,14 @@ class App {
 }
 
 // Lifecycle Initialization Engine
-window.addEventListener('DOMContentLoaded', () => {
-  App.init();
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await App.init();
+  } catch (error) {
+    console.error('Application initialization failed:', error);
+    App.setBackendStatus('Startup error');
+    App.showNotice('homeNotice', 'The app could not finish loading. Refresh once; if it continues, check the browser storage permissions and server connection.', 'bad');
+  }
 });
 </script>
 
