@@ -1,7 +1,0 @@
-.env
-__pycache__/
-*.py[cod]
-carrot_data.json
-carrot_data.tmp
-carrot_admin_password.txt
-certs/
